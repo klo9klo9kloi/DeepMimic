@@ -134,6 +134,7 @@ cSceneImitate::cSceneImitate()
 	mMotionFile = "";
 	mEnableRootRotFail = false;
 	mHoldEndFrame = 0;
+        mBaseMotionDuration = 0;
 }
 
 cSceneImitate::~cSceneImitate()
@@ -268,6 +269,7 @@ void cSceneImitate::BuildKinChar()
 		printf("Failed to build kin character\n");
 		assert(false);
 	}
+        mBaseMotionDuration = mKinChar->GetMotionDuration();
 }
 
 bool cSceneImitate::BuildKinCharacter(int id, std::shared_ptr<cKinCharacter>& out_char) const
@@ -323,6 +325,7 @@ void cSceneImitate::ResetCharacters()
 
 void cSceneImitate::ResetKinChar()
 {
+        SetRandKinMotionTime();
 	double rand_time = CalcRandKinResetTime();
 
 	const cSimCharacter::tParams& char_params = mCharParams[0];
@@ -357,6 +360,10 @@ void cSceneImitate::SyncCharacters()
 	{
 		double kin_time = GetKinTime();
 		ct_ctrl->SetInitTime(kin_time);
+
+                //@klo9klo9kloi
+                double_cycle_period = kin_char->GetMotionDuration();
+                ct_ctrl->SetCyclePeriod(cycle_period);
 	}
 }
 
@@ -490,4 +497,13 @@ double cSceneImitate::CalcRandKinResetTime()
 	double dur = kin_char->GetMotionDuration();
 	double rand_time = cMathUtil::RandDouble(0, dur);
 	return rand_time;
+}
+
+void cSceneImitate::SetRandKinMotionTime()
+{
+        double lower = 0.5;
+        double upper = 2.0;
+        double rand_time = cMathUtil::RandDouble(mBaseMotionDuration*lower, mBaseMotionDuration*upper);
+        const auto& kin_char = GetKinChar();
+        kin_char->SetMotionDuration(rand_time*mBaseMotionDuration);
 }

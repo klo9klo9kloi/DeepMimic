@@ -34,6 +34,7 @@ protected:
 	bool mSyncCharRootRot;
 	bool mEnableRootRotFail;
 	double mHoldEndFrame;
+        double mBaseMotionDuration;
 
 	virtual bool BuildCharacters();
 
@@ -63,5 +64,6 @@ protected:
 	virtual bool CheckRootRotFail(const cSimCharacter& sim_char, const cKinCharacter& kin_char) const;
 	
 	virtual double CalcRandKinResetTime();
-	virtual double CalcRewardImitate(const cSimCharacter& sim_char, const cKinCharacter& ref_char) const;
+	virtual void SetRandKinMotionTime();
+        virtual double CalcRewardImitate(const cSimCharacter& sim_char, const cKinCharacter& ref_char) const;
 };
