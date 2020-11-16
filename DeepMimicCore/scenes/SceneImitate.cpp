@@ -361,9 +361,9 @@ void cSceneImitate::SyncCharacters()
 		double kin_time = GetKinTime();
 		ct_ctrl->SetInitTime(kin_time);
 
-                //@klo9klo9kloi
-                double_cycle_period = kin_char->GetMotionDuration();
-                ct_ctrl->SetCyclePeriod(cycle_period);
+		//@klo9klo9kloi
+		double cycle_period = kin_char->GetMotionDuration();
+		ct_ctrl->SetCyclePeriod(cycle_period);
 	}
 }
 
@@ -498,7 +498,7 @@ double cSceneImitate::CalcRandKinResetTime()
 	double rand_time = cMathUtil::RandDouble(0, dur);
 	return rand_time;
 }
-
+// @klo9klo9kloi
 void cSceneImitate::SetRandKinMotionTime()
 {
         double lower = 0.5;
