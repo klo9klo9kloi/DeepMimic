@@ -1,0 +1,4 @@
+--scene kin_char
+
+--character_file data/characters/try1.txt
+--motion_file data/motions/try1_dance_b.txt

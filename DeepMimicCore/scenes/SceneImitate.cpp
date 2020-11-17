@@ -325,7 +325,7 @@ void cSceneImitate::ResetCharacters()
 
 void cSceneImitate::ResetKinChar()
 {
-        SetRandKinMotionTime();
+    SetRandKinMotionTime();
 	double rand_time = CalcRandKinResetTime();
 
 	const cSimCharacter::tParams& char_params = mCharParams[0];
