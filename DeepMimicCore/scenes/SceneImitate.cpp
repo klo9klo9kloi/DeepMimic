@@ -134,7 +134,7 @@ cSceneImitate::cSceneImitate()
 	mMotionFile = "";
 	mEnableRootRotFail = false;
 	mHoldEndFrame = 0;
-        mBaseMotionDuration = 0;
+    mBaseMotionDuration = 0; //@klo9klo9kloi
 }
 
 cSceneImitate::~cSceneImitate()
@@ -269,7 +269,7 @@ void cSceneImitate::BuildKinChar()
 		printf("Failed to build kin character\n");
 		assert(false);
 	}
-        mBaseMotionDuration = mKinChar->GetMotionDuration();
+    mBaseMotionDuration = mKinChar->GetMotionDuration(); //@klo9klo9kloi
 }
 
 bool cSceneImitate::BuildKinCharacter(int id, std::shared_ptr<cKinCharacter>& out_char) const
