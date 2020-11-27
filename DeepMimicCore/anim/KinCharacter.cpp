@@ -90,7 +90,11 @@ bool cKinCharacter::LoadMotionDir(const std::string& motion_dir){
 	DIR *dr = opendir(motion_dir.c_str());
     if (dr) {
         while ((en = readdir(dr)) != NULL) {
-        	LoadIndividualMotion(motion_dir + en->d_name);
+        	file_name =en->d_name; 
+        	if (file_name.compare("..") == 0 || file_name.compare(".") == 0){
+        		continue;
+        	}
+        	LoadIndividualMotion(motion_dir + "/" + file_name);
             //std::cout<<" \n"<<en->d_name; //print all directory name
             numMotions++;
         }
@@ -184,7 +188,9 @@ bool cKinCharacter::LoadMotion(const std::string& motion_file)
 }
 
 void cKinCharacter::SetRandomMotion(){
-	int index = cMathUtil::RandInt(0, numMotions);
+	int numElems = mMotinVec.size();
+	printf("%d, %d \n", numElems, numMotions);
+	int index = cMathUtil::RandInt(0, numElems);
 	mMotion = mMotionVec[index];
 	mCycleRootDelta = CalcCycleRootDelta();
 	Pose(mTime);
