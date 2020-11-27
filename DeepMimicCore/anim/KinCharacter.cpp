@@ -2,6 +2,8 @@
 #include <assert.h>
 #include <functional>
 #include "util/FileUtil.h"
+#include <filesystem>
+namespace fs = std::filesystem;
 
 const double gDiffTimeStep = 1 / 600.0;
 
@@ -9,7 +11,7 @@ cKinCharacter::tParams::tParams()
 {
 	mID = gInvalidIdx;
 	mCharFile = "";
-	mMotionFile = "";
+	mMotionFile = ""; //This should be a directory now
 	mOrigin.setZero();
 	mLoadDrawShapes = true;
 }
@@ -29,11 +31,17 @@ bool cKinCharacter::Init(const tParams& params)
 {
 	mID = params.mID;
 	bool succ = cCharacter::Init(params.mCharFile, params.mLoadDrawShapes);
+	numMotions=0;
+	std::string path = params.mMotionFile;
+    for (const auto & entry : fs::directory_iterator(path)){
+    	numMotions++;
+    }
+	mMotionVec = vector<cMotion>();
 	if (succ)
 	{
 		if (params.mMotionFile != "")
 		{
-			LoadMotion(params.mMotionFile);
+			LoadMotionDir(params.mMotionFile);
 		}
 
 		if (params.mStateFile != "")
@@ -80,6 +88,58 @@ void cKinCharacter::Reset()
 	cCharacter::Reset();
 }
 
+bool cKinChracter::LoadMotionDir(std::string& motion_dir){
+    for (const auto & entry : fs::directory_iterator(motion_dir)){
+    	cMotion currentMotion = cMotion();
+    	LoadIndividualMotion(entry)
+    }
+}
+
+bool cKinCharacter::LoadIndividualMotion(std::string& motion_file){
+	cMotion::tParams motion_params;
+	motion_params.mMotionFile = motion_file;
+	motion_params.mBlendFunc = std::bind(&cKinCharacter::BlendFrames, this,
+											std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
+											std::placeholders::_4);
+	motion_params.mMirrorFunc = std::bind(&cKinCharacter::MirrorFrame, this,
+											std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+	motion_params.mVelFunc = std::bind(&cKinCharacter::CalcFrameVel, this,
+											std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
+											std::placeholders::_4);
+	motion_params.mPostProcessFunc = std::bind(&cKinCharacter::PostProcessFrame, this, std::placeholders::_1);
+	cMotion currentMotion = cMotion();
+	bool succ = currentMotion.Load(motion_params);
+
+	if (succ)
+	{
+		int char_dof = GetNumDof();
+		int motion_dof = currentMotion.GetNumDof();
+
+		if (char_dof != motion_dof)
+		{
+			printf("DOF mismatch, char dof: %i, motion dof: %i\n", char_dof, motion_dof);
+			currentMotion.Clear();
+			succ = false;
+		}
+	}
+// NEED TO CALL THIS ON RESET
+	// if (succ)
+	// {
+	// 	mCycleRootDelta = CalcCycleRootDelta();
+	// 	Pose(mTime);
+	// 	mPose0 = GetPose();
+	// 	mVel0 = GetVel();
+	// }
+	if(succ){
+		mMotionVec.push_back(currentMotion);
+	}
+	if (!succ)
+	{
+		printf("Failed to load motion from: %s\n", motion_file.c_str());
+	}
+	return succ;
+}
+
 bool cKinCharacter::LoadMotion(const std::string& motion_file)
 {
 	cMotion::tParams motion_params;
@@ -121,6 +181,16 @@ bool cKinCharacter::LoadMotion(const std::string& motion_file)
 		printf("Failed to load motion from: %s\n", motion_file.c_str());
 	}
 	return succ;
+}
+
+void setRandomMotion(){
+	int index = rand()%numMotions;
+	mMotion = mMotionVec[index];
+	mCycleRootDelta = CalcCycleRootDelta();
+	Pose(mTime);
+	mPose0 = GetPose();
+	mVel0 = GetVel();
+
 }
 
 const cMotion& cKinCharacter::GetMotion() const
