@@ -2,8 +2,7 @@
 #include <assert.h>
 #include <functional>
 #include "util/FileUtil.h"
-#include <filesystem>
-namespace fs = std::filesystem;
+#include <experimental/filesystem>
 
 const double gDiffTimeStep = 1 / 600.0;
 
@@ -33,10 +32,10 @@ bool cKinCharacter::Init(const tParams& params)
 	bool succ = cCharacter::Init(params.mCharFile, params.mLoadDrawShapes);
 	numMotions=0;
 	std::string path = params.mMotionFile;
-    for (const auto & entry : fs::directory_iterator(path)){
+    for (const auto & entry : std::experimental::filesystem::directory_iterator(path)){
     	numMotions++;
     }
-	mMotionVec = vector<cMotion>();
+	mMotionVec = std::vector<cMotion>();
 	if (succ)
 	{
 		if (params.mMotionFile != "")
@@ -88,20 +87,16 @@ void cKinCharacter::Reset()
 	// @klo9klo9kloi
 	ResetParams();
 	SetRandomMotion();
-	mCycleRootDelta = CalcCycleRootDelta();
-	Pose(mTime);
-	mPose0 = GetPose();
-	mVel0 = GetVel();
 }
 
-bool cKinChracter::LoadMotionDir(std::string& motion_dir){
-    for (const auto & entry : fs::directory_iterator(motion_dir)){
-    	cMotion currentMotion = cMotion();
-    	LoadIndividualMotion(entry)
+bool cKinCharacter::LoadMotionDir(const std::string& motion_dir){
+    for (const auto & entry : std::experimental::filesystem::directory_iterator(motion_dir)){
+    	LoadIndividualMotion(entry.path());
     }
+    SetRandomMotion();
 }
 
-bool cKinCharacter::LoadIndividualMotion(std::string& motion_file){
+bool cKinCharacter::LoadIndividualMotion(const std::string& motion_file){
 	cMotion::tParams motion_params;
 	motion_params.mMotionFile = motion_file;
 	motion_params.mBlendFunc = std::bind(&cKinCharacter::BlendFrames, this,
@@ -128,14 +123,7 @@ bool cKinCharacter::LoadIndividualMotion(std::string& motion_file){
 			succ = false;
 		}
 	}
-// NEED TO CALL THIS ON RESET
-	// if (succ)
-	// {
-	// 	mCycleRootDelta = CalcCycleRootDelta();
-	// 	Pose(mTime);
-	// 	mPose0 = GetPose();
-	// 	mVel0 = GetVel();
-	// }
+
 	if(succ){
 		mMotionVec.push_back(currentMotion);
 	}
@@ -189,8 +177,8 @@ bool cKinCharacter::LoadMotion(const std::string& motion_file)
 	return succ;
 }
 
-void setRandomMotion(){
-	int index = rand()%numMotions;
+void cKinCharacter::SetRandomMotion(){
+	int index = cMathUtil::RandInt(0, numMotions);
 	mMotion = mMotionVec[index];
 	mCycleRootDelta = CalcCycleRootDelta();
 	Pose(mTime);

@@ -2,7 +2,6 @@
 
 #include "anim/Character.h"
 #include "anim/Motion.h"
-#include "vector.h"
 
 class cKinCharacter : public cCharacter
 {
@@ -31,10 +30,10 @@ public:
 	virtual void Update(double time_step);
 	virtual void Reset();
 
-	virtual bool LoadMotionDir(std::string& motion_dir);
-	virtual bool LoadIndividualMotion();
+	virtual bool LoadMotionDir(const std::string& motion_dir);
+	virtual bool LoadIndividualMotion(const std::string& motion_file);
 	virtual bool LoadMotion(const std::string& motion_file);
-	virtual void setRandomMotion();
+	virtual void SetRandomMotion();
 	virtual const cMotion& GetMotion() const;
 	virtual double GetMotionDuration() const;
 	virtual void SetMotionDuration(double dur);
