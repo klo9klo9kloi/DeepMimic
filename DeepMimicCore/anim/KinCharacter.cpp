@@ -2,7 +2,8 @@
 #include <assert.h>
 #include <functional>
 #include "util/FileUtil.h"
-#include <experimental/filesystem>
+#include <boost/filesystem.hpp>
+using namespace boost::filesystem;
 
 const double gDiffTimeStep = 1 / 600.0;
 
@@ -32,8 +33,15 @@ bool cKinCharacter::Init(const tParams& params)
 	bool succ = cCharacter::Init(params.mCharFile, params.mLoadDrawShapes);
 	numMotions=0;
 	std::string path = params.mMotionFile;
-    for (const auto & entry : std::experimental::filesystem::directory_iterator(path)){
-    	numMotions++;
+	path p(path);
+    for (auto i = directory_iterator(p); i != directory_iterator(); i++)
+    {
+        if (!is_directory(i->path())) //we eliminate directories in a list
+        {
+        	numMotions++;
+        }
+        else
+            continue;
     }
 	mMotionVec = std::vector<cMotion>();
 	if (succ)
@@ -90,9 +98,19 @@ void cKinCharacter::Reset()
 }
 
 bool cKinCharacter::LoadMotionDir(const std::string& motion_dir){
-    for (const auto & entry : std::experimental::filesystem::directory_iterator(motion_dir)){
-    	LoadIndividualMotion(entry.path());
+	path p(motion_dir);
+    for (auto i = directory_iterator(p); i != directory_iterator(); i++)
+    {
+        if (!is_directory(i->path())) //we eliminate directories in a list
+        {
+            LoadIndividualMotion( i->path().filename().string());
+        }
+        else
+            continue;
     }
+    // for (const auto & entry : std::experimental::filesystem::directory_iterator(motion_dir)){
+    // 	LoadIndividualMotion(entry.path());
+    // }
     SetRandomMotion();
 }
 
