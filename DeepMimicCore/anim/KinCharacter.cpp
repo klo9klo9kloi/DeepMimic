@@ -90,7 +90,7 @@ bool cKinCharacter::LoadMotionDir(const std::string& motion_dir){
 	DIR *dr = opendir(motion_dir.c_str());
     if (dr) {
         while ((en = readdir(dr)) != NULL) {
-        	LoadIndividualMotion(en->d_name);
+        	LoadIndividualMotion(motion_dir + en->d_name);
             //std::cout<<" \n"<<en->d_name; //print all directory name
             numMotions++;
         }
