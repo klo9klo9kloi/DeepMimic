@@ -2,8 +2,7 @@
 #include <assert.h>
 #include <functional>
 #include "util/FileUtil.h"
-#include <boost/filesystem.hpp>
-using namespace boost::filesystem;
+#include <dirent.h>
 
 const double gDiffTimeStep = 1 / 600.0;
 
@@ -31,18 +30,6 @@ bool cKinCharacter::Init(const tParams& params)
 {
 	mID = params.mID;
 	bool succ = cCharacter::Init(params.mCharFile, params.mLoadDrawShapes);
-	numMotions=0;
-	std::string path = params.mMotionFile;
-	path p(path);
-    for (auto i = directory_iterator(p); i != directory_iterator(); i++)
-    {
-        if (!is_directory(i->path())) //we eliminate directories in a list
-        {
-        	numMotions++;
-        }
-        else
-            continue;
-    }
 	mMotionVec = std::vector<cMotion>();
 	if (succ)
 	{
@@ -98,15 +85,16 @@ void cKinCharacter::Reset()
 }
 
 bool cKinCharacter::LoadMotionDir(const std::string& motion_dir){
-	path p(motion_dir);
-    for (auto i = directory_iterator(p); i != directory_iterator(); i++)
-    {
-        if (!is_directory(i->path())) //we eliminate directories in a list
-        {
-            LoadIndividualMotion( i->path().filename().string());
+	numMotions = 0;
+	struct dirent *en;
+	DIR *dr = opendir(motion_dir.c_str());
+    if (dr) {
+        while ((en = readdir(dr)) != NULL) {
+        	LoadIndividualMotion(en->d_name);
+            //std::cout<<" \n"<<en->d_name; //print all directory name
+            numMotions++;
         }
-        else
-            continue;
+        closedir(dr); //close all directory
     }
     // for (const auto & entry : std::experimental::filesystem::directory_iterator(motion_dir)){
     // 	LoadIndividualMotion(entry.path());
