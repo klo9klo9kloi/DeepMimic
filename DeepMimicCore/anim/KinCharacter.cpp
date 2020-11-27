@@ -94,16 +94,20 @@ bool cKinCharacter::LoadMotionDir(const std::string& motion_dir){
         	if (file_name.compare("..") == 0 || file_name.compare(".") == 0){
         		continue;
         	}
-        	LoadIndividualMotion(motion_dir + "/" + file_name);
-            //std::cout<<" \n"<<en->d_name; //print all directory name
+        	std::string temp = motion_dir + "/" + file_name;
+        	LoadIndividualMotion(temp);
             numMotions++;
         }
         closedir(dr); //close all directory
     }
-    // for (const auto & entry : std::experimental::filesystem::directory_iterator(motion_dir)){
-    // 	LoadIndividualMotion(entry.path());
-    // }
+
+    if (numMotions == 0) {
+    	printf("No motions found. \n");
+    	assert(false);
+    }
+    printf("Loaded %i motions. \n", numMotions);
     SetRandomMotion();
+    return true;
 }
 
 bool cKinCharacter::LoadIndividualMotion(const std::string& motion_file){
@@ -189,7 +193,6 @@ bool cKinCharacter::LoadMotion(const std::string& motion_file)
 
 void cKinCharacter::SetRandomMotion(){
 	int numElems = mMotionVec.size();
-	printf("%d, %d \n", numElems, numMotions);
 	int index = cMathUtil::RandInt(0, numElems);
 	mMotion = mMotionVec[index];
 	mCycleRootDelta = CalcCycleRootDelta();

@@ -1,4 +1,4 @@
 --scene kin_char
 
 --character_file data/characters/humanoid3d.txt
---motion_file data/motions/test/
+--motion_file data/motions/test
