@@ -77,7 +77,13 @@ void cKinCharacter::Update(double time_step)
 
 void cKinCharacter::Reset()
 {
-	cCharacter::Reset();
+	// @klo9klo9kloi
+	ResetParams();
+	SetRandomMotion();
+	mCycleRootDelta = CalcCycleRootDelta();
+	Pose(mTime);
+	mPose0 = GetPose();
+	mVel0 = GetVel();
 }
 
 bool cKinCharacter::LoadMotion(const std::string& motion_file)
