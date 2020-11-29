@@ -37,8 +37,7 @@ class RLAgent(ABC):
     EXP_ANNEAL_SAMPLES_KEY = "ExpAnnealSamples"
     EXP_PARAM_BEG_KEY = "ExpParamsBeg"
     EXP_PARAM_END_KEY = "ExpParamsEnd"
-    
-    
+
     def __init__(self, world, id, json_data):
         self.world = world
         self.id = id

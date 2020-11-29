@@ -23,6 +23,11 @@ public:
 
 	virtual std::string GetName() const;
 
+	virtual void RecordState(int agent_id, Eigen::VectorXd out_state) const;
+	virtual int GetStateSize(int agent_id) const;
+	virtual void BuildStateOffsetScale(int agent_id, Eigen::VectorXd& out_offset, Eigen::VectorXd& out_scale) const;
+	virtual void BuildStateNormGroups(int agent_id, Eigen::VectorXi& out_groups) const;
+
 protected:
 
 	std::string mMotionFile;
@@ -33,8 +38,10 @@ protected:
 	bool mSyncCharRootPos;
 	bool mSyncCharRootRot;
 	bool mEnableRootRotFail;
+	bool mAugment; //@klo9klo9kloi
+	int mK; //@klo9klo9kloi
 	double mHoldEndFrame;
-        double mBaseMotionDuration;
+	double mBaseMotionDuration; // @klo9klo9kloi
 
 	virtual bool BuildCharacters();
 
@@ -64,8 +71,9 @@ protected:
 	virtual bool CheckRootRotFail(const cSimCharacter& sim_char, const cKinCharacter& kin_char) const;
 	
 	virtual double CalcRandKinResetTime();
+	virtual void SetRandKinMotionTime(); // @klo9klo9kloi
+    virtual double CalcRewardImitate(const cSimCharacter& sim_char, const cKinCharacter& ref_char) const;
 	virtual void SetRandKinMotionTime();
     virtual double CalcRewardImitate(const cSimCharacter& sim_char, const cKinCharacter& ref_char) const;
     virtual std::vector<double> CalcAugmentedStates(const cKinCharacter& ref_char,int k) const;
-    virtual void calcAugmentedStates()
 };
