@@ -126,6 +126,76 @@ double cSceneImitate::CalcRewardImitate(const cSimCharacter& sim_char, const cKi
 	return reward;
 }
 
+std::vector<double> cSceneImitate::CalcAugmentedStates(const cKinCharacter& ref_char, int k) const
+{
+	std::vector<double> augmented = 	
+}
+
+// ----------------------------- @klo9klo9kloi --------------------------
+
+void cSceneImitate::RecordState(int agent_id, Eigen::VectorXd& out_state) const
+{
+	cRLSceneSimChar::RecordState(agent_id, out_state);
+	if(mAugment) {
+		int current_size = static_cast<int>(out_state.size());
+		Eigen::VectorXd augmented = std::numeric_limits<double>::quiet_NaN() * Eigen::VectorXd::Ones(mK*current_size); 
+		augmented.segment(0, current_size) = out_state;
+
+		const auto& kin_char = GetKinChar();
+		Eigen::VectorXd future_k = CalcAugmentedStates(kin_char, current_size);
+		augmented.segment(current_size, mK*current_size) = future_k;
+
+		out_state = augmented;
+	}
+}
+
+int cSceneImitate::GetStateSize(int agent_id) const
+{
+	int base_state_size = cRLSceneSimChar::GetStateSize(agent_id);
+	if (mAugment) {
+		return mK * base_state_size;
+	}
+	return base_state_size;
+}
+
+void cSceneImitate::BuildStateOffsetScale(int agent_id, Eigen::VectorXd& out_offset, Eigen::VectorXd& out_scale) const 
+{
+	cRLSceneSimChar::BuildStateOffsetScale(agent_id, out_offset, out_scale);
+	if (mAugment) {
+		int offset_size = static_cast<int>(out_offset.size());
+		int scale_size = static_cast<int>(out_scale.size());
+
+		Eigen::VectorXd augmented_offset = std::numeric_limits<double>::quiet_NaN() * Eigen::VectorXd::Ones(mK*offset_size);
+		Eigen::VectorXd augmented_scale = std::numeric_limits<double>::quiet_NaN() * Eigen::VectorXd::Ones(mK*scale_size);
+
+		for (int i = 0; i < mK; i++) {
+			augmented_offset.segment(i*offset_size, offset_size) = out_offset;
+			augmented_scale.segment(i*scale_size, scale_size) = out_scale;
+		}
+
+		out_offset = augmented_offset;
+		out_scale = augmented_scale;
+	}
+}
+
+void cSceneImitate::BuildStateNormGroups(int agent_id, Eigen::VectorXi& out_groups) const
+{
+	cRLSceneSimChar::BuildStateNormGroups(agent_id, out_groups);
+	if (mAugment) {
+		int group_size = static_cast<int>(out_groups.size());
+
+		Eigen::VectorXd augmented_groups = std::numeric_limits<double>::quiet_NaN() * Eigen::VectorXd::Ones(mK*group_size);
+
+		for (int i = 0; i < mK; i++) {
+			augmented_groups.segment(i*group_size, group_size) = out_groups;
+		}
+
+		out_groups = augmented_groups;
+	}
+}
+
+// ----------------------------- @klo9klo9kloi --------------------------
+
 cSceneImitate::cSceneImitate()
 {
 	mEnableRandRotReset = false;
@@ -150,6 +220,8 @@ void cSceneImitate::ParseArgs(const std::shared_ptr<cArgParser>& parser)
 	parser->ParseBool("sync_char_root_rot", mSyncCharRootRot);
 	parser->ParseBool("enable_root_rot_fail", mEnableRootRotFail);
 	parser->ParseDouble("hold_end_frame", mHoldEndFrame);
+	parser->ParseInt("augment_k", mK);
+	parser->ParseBool("augment", mAugment);
 }
 
 void cSceneImitate::Init()
