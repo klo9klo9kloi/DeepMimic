@@ -76,7 +76,6 @@ protected:
 	int numMotions;
 	cMotion mMotion;
 	std::vector<cMotion> mMotionVec;
-
 	tVector mCycleRootDelta;
 	tVector mOrigin;
 	tQuaternion mOriginRot;

@@ -126,10 +126,119 @@ double cSceneImitate::CalcRewardImitate(const cSimCharacter& sim_char, const cKi
 	return reward;
 }
 
-std::vector<double> cSceneImitate::CalcAugmentedStates(const cKinCharacter& ref_char, int k) const
-{
-	std::vector<double> augmented = 	
+Eigen::VectorXd<double> cSceneImitate::CalcAugmentedStates(double timestep, int state_size) const
+{	
+	const auto& kin_char = GetKinChar();
+	Eigen::VectorXd<double> augmented = Eigen::VectorXd::Zero(mK*state_size);
+	Eigen::VectorXd out_state;
+	double reset = kin_char->GetTime();
+	for (int i = 0; i < mK; i++) {
+		kin_char->Update(timestep);
+		augmented.segment(i*mK,mK) = CalculateState(out_state, state_size)
+		 
+	}
+	
+	kin_char->SetTime(reset);
+	kin_char->Pose(reset);
+	return augmented;
+	
 }
+
+void cSceneImitate::CalculateState(Eigen::VectorXd& out_state, int state_size) 
+{
+	//int state_size = GetStateSize();
+	// fill with nans to make sure we don't forget to set anything
+	out_state = std::numeric_limits<double>::quiet_NaN() * Eigen::VectorXd::Ones(state_size);
+
+	Eigen::VectorXd ground;
+	Eigen::VectorXd pose;
+	Eigen::VectorXd vel;
+	BuildStatePose(pose);
+	BuildStateVel(vel);
+
+	int pose_offset = GetStatePoseOffset();
+	int pose_size = GetStatePoseSize();
+	int vel_offset = GetStateVelOffset();
+	int vel_size = GetStateVelSize();
+
+	out_state.segment(pose_offset, pose_size) = pose;
+	out_state.segment(vel_offset, vel_size) = vel;
+}
+
+void cSceneImitate::BuildStatePose(Eigen::VectorXd& out_pose) const
+{	
+	const auto& m_Char = GetKinChar();
+	tMatrix origin_trans = mChar->BuildOriginTrans();
+
+	tVector root_pos = mChar->GetRootPos();
+	tVector root_pos_rel = root_pos;
+
+	root_pos_rel[3] = 1;
+	root_pos_rel = origin_trans * root_pos_rel;
+	root_pos_rel[3] = 0;
+
+	out_pose = Eigen::VectorXd::Zero(GetStatePoseSize());
+	out_pose[0] = root_pos_rel[1];
+	
+	int idx = 1;
+	int num_parts = mChar->GetNumBodyParts();
+	for (int i = 1; i < num_parts; ++i)
+	{
+		if (mChar->IsValidBodyPart(i))
+		{
+			const auto& curr_part = mChar->GetBodyPart(i);
+			tVector curr_pos = curr_part->GetPos();
+
+			curr_pos[3] = 1;
+			curr_pos = origin_trans * curr_pos;
+			curr_pos[3] = 0;
+			curr_pos -= root_pos_rel;
+
+			out_pose.segment(idx, mPosDim) = curr_pos.segment(0, mPosDim);
+			idx += mPosDim;
+		}
+	}
+}
+
+void cSceneImitate::BuildStateVel(Eigen::VectorXd& out_vel) const
+{	
+	const auto& m_Char = GetKinChar();
+	out_vel.resize(GetStateVelSize());
+	tMatrix origin_trans = mChar->BuildOriginTrans();
+
+	tVector root_pos = mChar->GetRootPos();
+	
+	int idx = 0;
+	int num_parts = mChar->GetNumBodyParts();
+	for (int i = 0; i < num_parts; ++i)
+	{
+		tVector curr_vel = mChar->GetBodyPartVel(i);
+		curr_vel = origin_trans * curr_vel;
+		out_vel.segment(idx, mPosDim) = curr_vel.segment(0, mPosDim);
+		idx += mPosDim;
+	}
+}
+
+int cSceneImitate::GetStatePoseOffset() const
+{
+	return 0;
+}
+
+int cSceneImitate::GetStateVelOffset() const
+{
+	return GetStatePoseOffset() + GetStatePoseSize();
+}
+
+int cSceneImitate::GetStatePoseSize() const
+{
+	return mChar->GetNumBodyParts() * mPosDim - 1; // -1 for root x
+}
+
+int cSceneImitate::GetStateVelSize() const
+{
+	return mChar->GetNumBodyParts() * mPosDim;
+}
+
 
 cSceneImitate::cSceneImitate()
 {
@@ -140,6 +249,7 @@ cSceneImitate::cSceneImitate()
 	mEnableRootRotFail = false;
 	mHoldEndFrame = 0;
     mBaseMotionDuration = 0; //@klo9klo9kloi
+    mPosDim = 3; //added
 }
 
 cSceneImitate::~cSceneImitate()
