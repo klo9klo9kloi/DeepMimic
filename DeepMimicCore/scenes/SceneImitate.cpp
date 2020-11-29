@@ -224,7 +224,6 @@ int cSceneImitate::GetStatePoseOffset() const
 	return 0;
 }
 
-<<<<<<< HEAD
 int cSceneImitate::GetStateVelOffset() const
 {
 	return GetStatePoseOffset() + GetStatePoseSize();
@@ -240,7 +239,6 @@ int cSceneImitate::GetStateVelSize() const
 	return mChar->GetNumBodyParts() * mPosDim;
 }
 
-=======
 // ----------------------------- @klo9klo9kloi --------------------------
 
 void cSceneImitate::RecordState(int agent_id, Eigen::VectorXd& out_state) const
@@ -305,7 +303,6 @@ void cSceneImitate::BuildStateNormGroups(int agent_id, Eigen::VectorXi& out_grou
 }
 
 // ----------------------------- @klo9klo9kloi --------------------------
->>>>>>> bf241104b6d7e1a63b8a68a6941b5a6da346a78f
 
 cSceneImitate::cSceneImitate()
 {
