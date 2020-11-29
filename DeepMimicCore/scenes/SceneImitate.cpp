@@ -126,6 +126,11 @@ double cSceneImitate::CalcRewardImitate(const cSimCharacter& sim_char, const cKi
 	return reward;
 }
 
+std::vector<double> cSceneImitate::CalcAugmentedStates(const cKinCharacter& ref_char, int k) const
+{
+	std::vector<double> augmented = 	
+}
+
 cSceneImitate::cSceneImitate()
 {
 	mEnableRandRotReset = false;

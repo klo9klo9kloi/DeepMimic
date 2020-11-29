@@ -18,7 +18,7 @@ public:
 	virtual void EnableRandRotReset(bool enable);
 	virtual bool EnabledRandRotReset() const;
 
-	virtual double CalcReward(int agent_id) const;
+	virtual double CalcReward(int agent_id) const;;
 	virtual eTerminate CheckTerminate(int agent_id) const;
 
 	virtual std::string GetName() const;
@@ -65,5 +65,7 @@ protected:
 	
 	virtual double CalcRandKinResetTime();
 	virtual void SetRandKinMotionTime();
-        virtual double CalcRewardImitate(const cSimCharacter& sim_char, const cKinCharacter& ref_char) const;
+    virtual double CalcRewardImitate(const cSimCharacter& sim_char, const cKinCharacter& ref_char) const;
+    virtual std::vector<double> CalcAugmentedStates(const cKinCharacter& ref_char,int k) const;
+    virtual void calcAugmentedStates()
 };
