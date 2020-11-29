@@ -18,12 +18,12 @@ public:
 	virtual void EnableRandRotReset(bool enable);
 	virtual bool EnabledRandRotReset() const;
 
-	virtual double CalcReward(int agent_id) const;;
+	virtual double CalcReward(int agent_id) const;
 	virtual eTerminate CheckTerminate(int agent_id) const;
 
 	virtual std::string GetName() const;
 
-	virtual void RecordState(int agent_id, Eigen::VectorXd out_state) const;
+	virtual void RecordState(int agent_id, Eigen::VectorXd& out_state, double timestep) const;
 	virtual int GetStateSize(int agent_id) const;
 	virtual void BuildStateOffsetScale(int agent_id, Eigen::VectorXd& out_offset, Eigen::VectorXd& out_scale) const;
 	virtual void BuildStateNormGroups(int agent_id, Eigen::VectorXi& out_groups) const;
@@ -38,10 +38,11 @@ protected:
 	bool mSyncCharRootPos;
 	bool mSyncCharRootRot;
 	bool mEnableRootRotFail;
-	bool mAugment; //@klo9klo9kloi
-	int mK; //@klo9klo9kloi
 	double mHoldEndFrame;
 	double mBaseMotionDuration; // @klo9klo9kloi
+	bool mAugment; //@klo9klo9kloi
+	int mK; //@klo9klo9kloi
+	int mPosDim;
 
 	virtual bool BuildCharacters();
 
@@ -73,7 +74,12 @@ protected:
 	virtual double CalcRandKinResetTime();
 	virtual void SetRandKinMotionTime(); // @klo9klo9kloi
     virtual double CalcRewardImitate(const cSimCharacter& sim_char, const cKinCharacter& ref_char) const;
-	virtual void SetRandKinMotionTime();
-    virtual double CalcRewardImitate(const cSimCharacter& sim_char, const cKinCharacter& ref_char) const;
-    virtual std::vector<double> CalcAugmentedStates(const cKinCharacter& ref_char,int k) const;
+    virtual Eigen::VectorXd CalcAugmentedStates(double timestep, int state_size) const;
+    virtual void CalculateState(Eigen::VectorXd& out_state, int state_size) const;
+    virtual void BuildStatePose(Eigen::VectorXd& out_pose) const;
+    virtual void BuildStateVel(Eigen::VectorXd& out_vel) const;
+    virtual int GetStatePoseOffset() const;
+    virtual int GetStateVelOffset() const;
+    virtual int GetStatePoseSize() const;
+    virtual int GetStateVelSize() const;
 };

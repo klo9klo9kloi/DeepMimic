@@ -126,10 +126,10 @@ double cSceneImitate::CalcRewardImitate(const cSimCharacter& sim_char, const cKi
 	return reward;
 }
 
-Eigen::VectorXd<double> cSceneImitate::CalcAugmentedStates(double timestep, int state_size) const
+Eigen::VectorXd cSceneImitate::CalcAugmentedStates(double timestep, int state_size) const
 {	
 	const auto& kin_char = GetKinChar();
-	Eigen::VectorXd<double> augmented = Eigen::VectorXd::Zero(mK*state_size);
+	Eigen::VectorXd augmented = Eigen::VectorXd::Zero(mK*state_size);
 	Eigen::VectorXd out_state;
 	double reset = kin_char->GetTime();
 	for (int i = 0; i < mK; i++) {
@@ -144,7 +144,7 @@ Eigen::VectorXd<double> cSceneImitate::CalcAugmentedStates(double timestep, int 
 	
 }
 
-void cSceneImitate::CalculateState(Eigen::VectorXd& out_state, int state_size) 
+void cSceneImitate::CalculateState(Eigen::VectorXd& out_state, int state_size) const
 {
 	//int state_size = GetStateSize();
 	// fill with nans to make sure we don't forget to set anything
@@ -167,7 +167,7 @@ void cSceneImitate::CalculateState(Eigen::VectorXd& out_state, int state_size)
 
 void cSceneImitate::BuildStatePose(Eigen::VectorXd& out_pose) const
 {	
-	const auto& m_Char = GetKinChar();
+	const auto& mChar = GetKinChar();
 	tMatrix origin_trans = mChar->BuildOriginTrans();
 
 	tVector root_pos = mChar->GetRootPos();
@@ -202,7 +202,7 @@ void cSceneImitate::BuildStatePose(Eigen::VectorXd& out_pose) const
 
 void cSceneImitate::BuildStateVel(Eigen::VectorXd& out_vel) const
 {	
-	const auto& m_Char = GetKinChar();
+	const auto& mChar = GetKinChar();
 	out_vel.resize(GetStateVelSize());
 	tMatrix origin_trans = mChar->BuildOriginTrans();
 
@@ -231,17 +231,18 @@ int cSceneImitate::GetStateVelOffset() const
 
 int cSceneImitate::GetStatePoseSize() const
 {
+	const auto& mChar = GetKinChar();
 	return mChar->GetNumBodyParts() * mPosDim - 1; // -1 for root x
 }
 
 int cSceneImitate::GetStateVelSize() const
 {
+	const auto& mChar = GetKinChar();
 	return mChar->GetNumBodyParts() * mPosDim;
 }
-
 // ----------------------------- @klo9klo9kloi --------------------------
 
-void cSceneImitate::RecordState(int agent_id, Eigen::VectorXd& out_state) const
+void cSceneImitate::RecordState(int agent_id, Eigen::VectorXd& out_state, double timestep) const
 {
 	cRLSceneSimChar::RecordState(agent_id, out_state);
 	if(mAugment) {
@@ -250,7 +251,7 @@ void cSceneImitate::RecordState(int agent_id, Eigen::VectorXd& out_state) const
 		augmented.segment(0, current_size) = out_state;
 
 		const auto& kin_char = GetKinChar();
-		Eigen::VectorXd future_k = CalcAugmentedStates(kin_char, current_size);
+		Eigen::VectorXd future_k = CalcAugmentedStates(timestep, current_size);
 		augmented.segment(current_size, mK*current_size) = future_k;
 
 		out_state = augmented;
@@ -292,7 +293,7 @@ void cSceneImitate::BuildStateNormGroups(int agent_id, Eigen::VectorXi& out_grou
 	if (mAugment) {
 		int group_size = static_cast<int>(out_groups.size());
 
-		Eigen::VectorXd augmented_groups = std::numeric_limits<double>::quiet_NaN() * Eigen::VectorXd::Ones(mK*group_size);
+		Eigen::VectorXi augmented_groups = std::numeric_limits<int>::quiet_NaN() * Eigen::VectorXi::Ones(mK*group_size);
 
 		for (int i = 0; i < mK; i++) {
 			augmented_groups.segment(i*group_size, group_size) = out_groups;
@@ -329,8 +330,6 @@ void cSceneImitate::ParseArgs(const std::shared_ptr<cArgParser>& parser)
 	parser->ParseBool("sync_char_root_rot", mSyncCharRootRot);
 	parser->ParseBool("enable_root_rot_fail", mEnableRootRotFail);
 	parser->ParseDouble("hold_end_frame", mHoldEndFrame);
-	parser->ParseInt("augment_k", mK);
-	parser->ParseBool("augment", mAugment);
 }
 
 void cSceneImitate::Init()
