@@ -126,6 +126,36 @@ double cSceneImitate::CalcRewardImitate(const cSimCharacter& sim_char, const cKi
 	return reward;
 }
 
+void cSceneImitate::CalcStates(int agent_id, double timestep, double totalTime, double stateSize) 
+{	
+	const cSimCharacter* sim_char = GetAgentChar(agent_id);
+	const auto& kin_char = GetKinChar();
+	int numStates = totalTime/timestep; //round this off if necessary
+	double startTime = kin_char->GetTime(); // make sure this is zero as this func is called in the beginning
+	assert(startTime == 0.0);
+	Eigen::VectorXd states =  Eigen::VectorXd::Zero(numStates*stateSize);;
+	for (int i = 0; i < numStates; i++) {
+		Eigen::VectorXd state;
+		SyncCharacters();
+		RecordState(agent_id, state);
+		states.segment(i*stateSize, stateSize) = state;
+		kin_char->Update(timestep);
+	}
+	mStates = states; // define mStates in .hfile
+	kin_char->SetTime(startTime);
+	kin_char->Pose(startTime);
+	SyncCharacters();
+}
+Eigen::VectorXd<double> cSceneImitate::CalcStatesToAugment(int startState, int numStates, int stateSize) const
+{	
+	// here startState is the state number from the beginning
+	//numStates is the number of future states to collect from startState onwards
+	//statesize is the size of a single state.
+	return mStates.segment(startState*stateSize, numStates*stateSize);
+
+}
+
+/*
 Eigen::VectorXd cSceneImitate::CalcAugmentedStates(double timestep, int state_size) const
 {	
 	const auto& kin_char = GetKinChar();
@@ -240,6 +270,7 @@ int cSceneImitate::GetStateVelSize() const
 	const auto& mChar = GetKinChar();
 	return mChar->GetNumBodyParts() * mPosDim;
 }
+*/
 // ----------------------------- @klo9klo9kloi --------------------------
 
 void cSceneImitate::RecordState(int agent_id, Eigen::VectorXd& out_state, double timestep) const

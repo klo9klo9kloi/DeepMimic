@@ -43,6 +43,7 @@ protected:
 	bool mAugment; //@klo9klo9kloi
 	int mK; //@klo9klo9kloi
 	int mPosDim;
+	Eigen::VectorXd mStates;
 
 	virtual bool BuildCharacters();
 
@@ -74,6 +75,10 @@ protected:
 	virtual double CalcRandKinResetTime();
 	virtual void SetRandKinMotionTime(); // @klo9klo9kloi
     virtual double CalcRewardImitate(const cSimCharacter& sim_char, const cKinCharacter& ref_char) const;
+    virtual void cSceneImitate::CalcStates(int agent_id, double timestep, double totalTime, double stateSize);
+    virtual Eigen::VectorXd<double> cSceneImitate::CalcStatesToAugment(int startState, int numStates, int stateSize);
+
+    /*
     virtual Eigen::VectorXd CalcAugmentedStates(double timestep, int state_size) const;
     virtual void CalculateState(Eigen::VectorXd& out_state, int state_size) const;
     virtual void BuildStatePose(Eigen::VectorXd& out_pose) const;
@@ -82,4 +87,5 @@ protected:
     virtual int GetStateVelOffset() const;
     virtual int GetStatePoseSize() const;
     virtual int GetStateVelSize() const;
+    */
 };
