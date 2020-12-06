@@ -370,6 +370,8 @@ void cSceneImitate::Init()
 
 	cRLSceneSimChar::Init();
 	InitJointWeights();
+	CalcStates(0, )// fill in timestep totaltime and statesize 
+
 }
 
 double cSceneImitate::CalcReward(int agent_id) const
@@ -529,7 +531,8 @@ void cSceneImitate::ResetCharacters()
 
 	ResetKinChar();
 	if (EnableSyncChar())
-	{
+	{	
+		CalcStates(0, ) // fill in the rest here;
 		SyncCharacters();
 	}
 }
