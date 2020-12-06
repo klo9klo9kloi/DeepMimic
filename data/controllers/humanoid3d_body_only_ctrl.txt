@@ -20,13 +20,21 @@
 		{
 			"ID": 1,
 			"Name": "chest",
-			"Kp": 0,
-			"Kd": 0,
+			"Kp": 1000,
+			"Kd": 100,
 			"TargetTheta0": 0,
 			"UseWorldCoord": 0
 		},
 		{
 			"ID": 2,
+			"Name": "neck",
+			"Kp": 100,
+			"Kd": 10,
+			"TargetTheta0": 0,
+			"UseWorldCoord": 0
+		},
+		{
+			"ID": 3,
 			"Name": "right_shoulder",
 			"Kp": 400,
 			"Kd": 40,
@@ -34,7 +42,7 @@
 			"UseWorldCoord": 0
 		},
 		{
-			"ID": 3,
+			"ID": 4,
 			"Name": "right_elbow",
 			"Kp": 300,
 			"Kd": 30,
@@ -42,7 +50,7 @@
 			"UseWorldCoord": 0
 		},
 		{
-			"ID": 4,
+			"ID": 5,
 			"Name": "right_wrist",
 			"Kp": 0,
 			"Kd": 0,
@@ -50,7 +58,7 @@
 			"UseWorldCoord": 0
 		},
 		{
-			"ID": 5,
+			"ID": 6,
 			"Name": "left_shoulder",
 			"Kp": 400,
 			"Kd": 40,
@@ -58,7 +66,7 @@
 			"UseWorldCoord": 0
 		},
 		{
-			"ID": 6,
+			"ID": 7,
 			"Name": "left_elbow",
 			"Kp": 300,
 			"Kd": 30,
@@ -66,7 +74,7 @@
 			"UseWorldCoord": 0
 		},
 		{
-			"ID": 7,
+			"ID": 8,
 			"Name": "left_wrist",
 			"Kp": 0,
 			"Kd": 0,

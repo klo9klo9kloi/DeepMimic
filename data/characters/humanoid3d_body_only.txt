@@ -27,7 +27,7 @@
 			{
 				"ID": 1,
 				"Name": "chest",
-				"Type": "fixed",
+				"Type": "spherical",
 				"Parent": 0,
 				"AttachX": 0.000000,
 				"AttachY": 0.236151,
@@ -47,6 +47,27 @@
 			},
 			{
 				"ID": 2,
+				"Name": "neck",
+				"Type": "spherical",
+				"Parent": 1,
+				"AttachX": 0.000000,
+				"AttachY": 0.223894,
+				"AttachZ": 0.000000,
+				"AttachThetaX": 0.000000,
+				"AttachThetaY": 0.000000,
+				"AttachThetaZ": 0.000000,
+				"LimLow0": -1,
+				"LimHigh0": 1,
+				"LimLow1": -1,
+				"LimHigh1": 1,
+				"LimLow2": -1,
+				"LimHigh2": 1,
+				"TorqueLim": 50,
+				"IsEndEffector": 0,
+				"DiffWeight": 0.3
+			},
+			{
+				"ID": 3,
 				"Name": "right_shoulder",
 				"Type": "spherical",
 				"Parent": 1,
@@ -67,10 +88,10 @@
 				"DiffWeight": 0.3
 			},
 			{
-				"ID": 3,
+				"ID": 4,
 				"Name": "right_elbow",
 				"Type": "revolute",
-				"Parent": 2,
+				"Parent": 3,
 				"AttachX": 0.000000,
 				"AttachY": -0.274788,
 				"AttachZ": 0.000000,
@@ -84,10 +105,10 @@
 				"DiffWeight": 0.2
 			},
 			{
-				"ID": 4,
+				"ID": 5,
 				"Name": "right_wrist",
 				"Type": "fixed",
-				"Parent": 3,
+				"Parent": 4,
 				"AttachX": 0.000000,
 				"AttachY": -0.258947,
 				"AttachZ": 0.000000,
@@ -105,7 +126,7 @@
 			},
 
 			{
-				"ID": 5,
+				"ID": 6,
 				"Name": "left_shoulder",
 				"Type": "spherical",
 				"Parent": 1,
@@ -126,10 +147,10 @@
 				"DiffWeight": 0.3
 			},
 			{
-				"ID": 6,
+				"ID": 7,
 				"Name": "left_elbow",
 				"Type": "revolute",
-				"Parent": 5,
+				"Parent": 6,
 				"AttachX": 0.000000,
 				"AttachY": -0.274788,
 				"AttachZ": 0.000000,
@@ -143,10 +164,10 @@
 				"DiffWeight": 0.2
 			},
 			{
-				"ID": 7,
+				"ID": 8,
 				"Name": "left_wrist",
 				"Type": "fixed",
-				"Parent": 6,
+				"Parent": 7,
 				"AttachX": 0.000000,
 				"AttachY": -0.258947,
 				"AttachZ": 0.000000,
@@ -211,6 +232,27 @@
 		},
 		{
 			"ID": 2,
+			"Name": "neck",
+			"Shape": "sphere",
+			"Mass": 2.0,
+			"ColGroup": 1,
+			"EnableFallContact": 1,
+			"AttachX": 0,
+			"AttachY": 0.175,
+			"AttachZ": 0,
+			"AttachThetaX": 0,
+			"AttachThetaY": 0,
+			"AttachThetaZ": 0,
+			"Param0": 0.205,
+			"Param1": 0.205,
+			"Param2": 0.205,
+			"ColorR": 0.4706,
+			"ColorG": 0.549,
+			"ColorB": 0.6863,
+			"ColorA": 1
+		},
+		{
+			"ID": 3,
 			"Name": "right_shoulder",
 			"Shape": "capsule",
 			"Mass": 1.5,
@@ -231,7 +273,7 @@
 			"ColorA": 1
 		},
 		{
-			"ID": 3,
+			"ID": 4,
 			"Name": "right_elbow",
 			"Shape": "capsule",
 			"Mass": 1,
@@ -252,7 +294,7 @@
 			"ColorA": 1
 		},
 		{
-			"ID": 4,
+			"ID": 5,
 			"Name": "right_wrist",
 			"Shape": "sphere",
 			"Mass": 0.5,
@@ -273,7 +315,7 @@
 			"ColorA": 1
 		},
 		{
-			"ID": 5,
+			"ID": 6,
 			"Name": "left_shoulder",
 			"Shape": "capsule",
 			"Mass": 1.5,
@@ -294,7 +336,7 @@
 			"ColorA": 1
 		},
 		{
-			"ID": 6,
+			"ID": 7,
 			"Name": "left_elbow",
 			"Shape": "capsule",
 			"Mass": 1,
@@ -315,7 +357,7 @@
 			"ColorA": 1
 		},
 		{
-			"ID": 7,
+			"ID": 8,
 			"Name": "left_wrist",
 			"Shape": "sphere",
 			"Mass": 0.5,
@@ -379,9 +421,28 @@
 		},
 		{
 			"ID": 2,
+			"Name": "neck",
+			"Shape": "sphere",
+			"ParentJoint": 2,
+			"AttachX": 0,
+			"AttachY": 0.175,
+			"AttachZ": 0,
+			"AttachThetaX": 0,
+			"AttachThetaY": 0,
+			"AttachThetaZ": 0,
+			"Param0": 0.205,
+			"Param1": 0.205,
+			"Param2": 0.205,
+			"ColorR": 0.4706,
+			"ColorG": 0.549,
+			"ColorB": 0.6863,
+			"ColorA": 1
+		},
+		{
+			"ID": 3,
 			"Name": "right_shoulder",
 			"Shape": "capsule",
-			"ParentJoint": 2,
+			"ParentJoint": 3,
 			"AttachX": 0,
 			"AttachY": -0.14,
 			"AttachZ": 0,
@@ -397,10 +458,10 @@
 			"ColorA": 1
 		},
 		{
-			"ID": 3,
+			"ID": 4,
 			"Name": "right_elbow",
 			"Shape": "capsule",
-			"ParentJoint": 3,
+			"ParentJoint": 4,
 			"AttachX": 0,
 			"AttachY": -0.12,
 			"AttachZ": 0,
@@ -416,10 +477,10 @@
 			"ColorA": 1
 		},
 		{
-			"ID": 4,
+			"ID": 5,
 			"Name": "right_wrist",
 			"Shape": "sphere",
-			"ParentJoint": 4,
+			"ParentJoint": 5,
 			"AttachX": 0,
 			"AttachY": 0,
 			"AttachZ": 0,
@@ -435,10 +496,10 @@
 			"ColorA": 1
 		},
 		{
-			"ID": 5,
+			"ID": 6,
 			"Name": "left_shoulder",
 			"Shape": "capsule",
-			"ParentJoint": 5,
+			"ParentJoint": 6,
 			"AttachX": 0,
 			"AttachY": -0.14,
 			"AttachZ": 0,
@@ -454,9 +515,9 @@
 			"ColorA": 1
 		},
 		{
-			"ID": 6,
+			"ID": 7,
 			"Name": "left_elbow",
-			"ParentJoint": 6,
+			"ParentJoint": 7,
 			"Shape": "capsule",
 			"AttachX": 0,
 			"AttachY": -0.12,
@@ -473,10 +534,10 @@
 			"ColorA": 1
 		},
 		{
-			"ID": 7,
+			"ID": 8,
 			"Name": "left_wrist",
 			"Shape": "sphere",
-			"ParentJoint": 7,
+			"ParentJoint": 8,
 			"AttachX": 0,
 			"AttachY": 0,
 			"AttachZ": 0,
@@ -494,7 +555,7 @@
 
 
 		{
-			"ID": 8,
+			"ID": 9,
 			"Name": "right_clavicle",
 			"Shape": "capsule",
 			"ParentJoint": 1,
@@ -513,7 +574,7 @@
 			"ColorA": 1
 		},
 		{
-			"ID": 9,
+			"ID": 10,
 			"Name": "left_clavicle",
 			"Shape": "capsule",
 			"ParentJoint": 1,
@@ -532,7 +593,7 @@
 			"ColorA": 1
 		},
 		{
-			"ID": 10,
+			"ID": 11,
 			"Name": "joint_waist",
 			"Shape": "sphere",
 			"ParentJoint": 0,
@@ -551,12 +612,12 @@
 			"ColorA": 1
 		},
 		{
-			"ID": 11,
-			"Name": "joint_right_shoulder",
+			"ID": 12,
+			"Name": "joint_neck",
 			"Shape": "sphere",
 			"ParentJoint": 2,
 			"AttachX": 0,
-			"AttachY": 0,
+			"AttachY": 0.02,
 			"AttachZ": 0,
 			"AttachThetaX": 0,
 			"AttachThetaY": 0,
@@ -570,29 +631,10 @@
 			"ColorA": 1
 		},
 		{
-			"ID": 12,
-			"Name": "joint_right_elbow",
+			"ID": 13,
+			"Name": "joint_right_shoulder",
 			"Shape": "sphere",
 			"ParentJoint": 3,
-			"AttachX": 0,
-			"AttachY": 0,
-			"AttachZ": 0,
-			"AttachThetaX": 0,
-			"AttachThetaY": 0,
-			"AttachThetaZ": 0,
-			"Param0": 0.06,
-			"Param1": 0.06,
-			"Param2": 0.06,
-			"ColorR": 0.3,
-			"ColorG": 0.3,
-			"ColorB": 0.3,
-			"ColorA": 1
-		},
-		{
-			"ID": 13,
-			"Name": "joint_left_shoulder",
-			"Shape": "sphere",
-			"ParentJoint": 5,
 			"AttachX": 0,
 			"AttachY": 0,
 			"AttachZ": 0,
@@ -609,9 +651,47 @@
 		},
 		{
 			"ID": 14,
-			"Name": "joint_left_elbow",
+			"Name": "joint_right_elbow",
+			"Shape": "sphere",
+			"ParentJoint": 4,
+			"AttachX": 0,
+			"AttachY": 0,
+			"AttachZ": 0,
+			"AttachThetaX": 0,
+			"AttachThetaY": 0,
+			"AttachThetaZ": 0,
+			"Param0": 0.06,
+			"Param1": 0.06,
+			"Param2": 0.06,
+			"ColorR": 0.3,
+			"ColorG": 0.3,
+			"ColorB": 0.3,
+			"ColorA": 1
+		},
+		{
+			"ID": 15,
+			"Name": "joint_left_shoulder",
 			"Shape": "sphere",
 			"ParentJoint": 6,
+			"AttachX": 0,
+			"AttachY": 0,
+			"AttachZ": 0,
+			"AttachThetaX": 0,
+			"AttachThetaY": 0,
+			"AttachThetaZ": 0,
+			"Param0": 0.08,
+			"Param1": 0.08,
+			"Param2": 0.08,
+			"ColorR": 0.3,
+			"ColorG": 0.3,
+			"ColorB": 0.3,
+			"ColorA": 1
+		},
+		{
+			"ID": 16,
+			"Name": "joint_left_elbow",
+			"Shape": "sphere",
+			"ParentJoint": 7,
 			"AttachX": 0,
 			"AttachY": 0,
 			"AttachZ": 0,

@@ -126,24 +126,26 @@ double cSceneImitate::CalcRewardImitate(const cSimCharacter& sim_char, const cKi
 	return reward;
 }
 
+// ----------------------------- added --------------------------
+
 void cSceneImitate::CalcStates() 
 {	
+	int agent_id = 0;
 	const cSimCharacter* sim_char = GetAgentChar(agent_id);
 	const auto& kin_char = GetKinChar();
-	double totalTime = kin_char.GetMotionDuration();
+	double totalTime = kin_char->GetMotionDuration();
 	double timestep = 1/60;
-	int agent_id = 0;
-    int statesize = cRLSceneSimChar::GetStateSize(agent_id);
+    int state_size = cRLSceneSimChar::GetStateSize(agent_id);
 
 	int numStates = totalTime/timestep; //round this off if necessary
 	double startTime = kin_char->GetTime(); // make sure this is zero as this func is called in the beginning
 	assert(startTime == 0.0);
-	Eigen::VectorXd states =  Eigen::VectorXd::Zero(numStates*stateSize);;
+	Eigen::VectorXd states =  Eigen::VectorXd::Zero(numStates*state_size);
 	for (int i = 0; i < numStates; i++) {
 		Eigen::VectorXd state;
 		SyncCharacters();
 		RecordState(agent_id, state);
-		states.segment(i*stateSize, stateSize) = state;
+		states.segment(i*state_size, state_size) = state;
 		kin_char->Update(timestep);
 	}
 	mStates = states; // define mStates in .hfile
@@ -151,12 +153,21 @@ void cSceneImitate::CalcStates()
 	kin_char->Pose(startTime);
 	SyncCharacters();
 }
-Eigen::VectorXd<double> cSceneImitate::CalcStatesToAugment(int startState, int numStates, int stateSize) const
+
+Eigen::VectorXd cSceneImitate::CalcAugmentedStates() const
 {	
 	// here startState is the state number from the beginning
 	//numStates is the number of future states to collect from startState onwards
 	//statesize is the size of a single state.
-	return mStates.segment(startState*stateSize, numStates*stateSize);
+	double timestep = 1/60;
+	int agent_id = 0;
+    int state_size = cRLSceneSimChar::GetStateSize(agent_id);
+
+    const auto& kin_char = GetKinChar();
+    double curr_time = kin_char->GetTime();
+    int startState = curr_time/timestep; 
+
+	return mStates.segment(startState*state_size, mK*state_size);
 
 }
 
@@ -276,19 +287,18 @@ int cSceneImitate::GetStateVelSize() const
 	return mChar->GetNumBodyParts() * mPosDim;
 }
 */
-// ----------------------------- @klo9klo9kloi --------------------------
 
-void cSceneImitate::RecordState(int agent_id, Eigen::VectorXd& out_state, double timestep) const
+
+void cSceneImitate::RecordState(int agent_id, Eigen::VectorXd& out_state) const
 {
 	cRLSceneSimChar::RecordState(agent_id, out_state);
 	if(mAugment) {
-		int current_size = static_cast<int>(out_state.size());
-		Eigen::VectorXd augmented = std::numeric_limits<double>::quiet_NaN() * Eigen::VectorXd::Ones(mK*current_size); 
-		augmented.segment(0, current_size) = out_state;
+		int state_size = static_cast<int>(out_state.size());
+		Eigen::VectorXd augmented = std::numeric_limits<double>::quiet_NaN() * Eigen::VectorXd::Ones(mK*state_size); 
+		augmented.segment(0, state_size) = out_state;
 
-		const auto& kin_char = GetKinChar();
-		Eigen::VectorXd future_k = CalcAugmentedStates(timestep, current_size);
-		augmented.segment(current_size, mK*current_size) = future_k;
+		Eigen::VectorXd future_k = CalcAugmentedStates();
+		augmented.segment(state_size, mK*state_size) = future_k;
 
 		out_state = augmented;
 	}
@@ -339,7 +349,7 @@ void cSceneImitate::BuildStateNormGroups(int agent_id, Eigen::VectorXi& out_grou
 	}
 }
 
-// ----------------------------- @klo9klo9kloi --------------------------
+// ----------------------------- added --------------------------
 
 cSceneImitate::cSceneImitate()
 {
@@ -349,8 +359,12 @@ cSceneImitate::cSceneImitate()
 	mMotionFile = "";
 	mEnableRootRotFail = false;
 	mHoldEndFrame = 0;
-    mBaseMotionDuration = 0; //@klo9klo9kloi
-    mPosDim = 3; //added
+	// added
+    mBaseMotionDuration = 0;
+    mPosDim = 3;
+    mK = 0; 
+    mAugment = false;
+    mEnableRandTiming = false;
 }
 
 cSceneImitate::~cSceneImitate()
@@ -366,6 +380,9 @@ void cSceneImitate::ParseArgs(const std::shared_ptr<cArgParser>& parser)
 	parser->ParseBool("sync_char_root_rot", mSyncCharRootRot);
 	parser->ParseBool("enable_root_rot_fail", mEnableRootRotFail);
 	parser->ParseDouble("hold_end_frame", mHoldEndFrame);
+	parser->ParseInt("augment_k", mK); //added
+	parser->ParseBool("augment", mAugment); //added
+	parser->ParseBool("enable_rand_timing", mEnableRandTiming);
 }
 
 void cSceneImitate::Init()
@@ -375,8 +392,7 @@ void cSceneImitate::Init()
 
 	cRLSceneSimChar::Init();
 	InitJointWeights();
-	CalcStates()// fill in timestep totaltime and statesize 
-
+	CalcStates(); 
 }
 
 double cSceneImitate::CalcReward(int agent_id) const
@@ -406,6 +422,12 @@ void cSceneImitate::EnableRandRotReset(bool enable)
 bool cSceneImitate::EnabledRandRotReset() const
 {
 	bool enable = mEnableRandRotReset;
+	return enable;
+}
+
+bool cSceneImitate::EnabledRandTiming() const
+{
+	bool enable = mEnableRandTiming;
 	return enable;
 }
 
@@ -537,22 +559,25 @@ void cSceneImitate::ResetCharacters()
 	ResetKinChar();
 	if (EnableSyncChar())
 	{	
-		CalcStates() // fill in the rest here;
 		SyncCharacters();
 	}
 }
 
 void cSceneImitate::ResetKinChar()
-{
-    SetRandKinMotionTime();
-	double rand_time = CalcRandKinResetTime();
-
+{	
 	const cSimCharacter::tParams& char_params = mCharParams[0];
 	const auto& kin_char = GetKinChar();
-
-	kin_char->Reset();
+	kin_char->Reset();  // reset must happen first now, since it switches reference motions -> motion duration changes
 	kin_char->SetOriginRot(tQuaternion::Identity());
 	kin_char->SetOriginPos(char_params.mInitPos); // reset origin
+
+	if (EnabledRandTiming()) {
+		SetRandKinMotionTime(); //dependent on new motion duration
+	}
+
+    CalcStates(); // dependent on new motion duration
+	double rand_time = CalcRandKinResetTime(); //dependent on new motion duration
+
 	kin_char->SetTime(rand_time);
 	kin_char->Pose(rand_time);
 
@@ -580,9 +605,11 @@ void cSceneImitate::SyncCharacters()
 		double kin_time = GetKinTime();
 		ct_ctrl->SetInitTime(kin_time);
 
-		//@klo9klo9kloi
-		double cycle_period = kin_char->GetMotionDuration();
-		ct_ctrl->SetCyclePeriod(cycle_period);
+		if (EnabledRandTiming()) {
+			//added
+			double cycle_period = kin_char->GetMotionDuration();
+			ct_ctrl->SetCyclePeriod(cycle_period);
+		}
 	}
 }
 
@@ -717,12 +744,13 @@ double cSceneImitate::CalcRandKinResetTime()
 	double rand_time = cMathUtil::RandDouble(0, dur);
 	return rand_time;
 }
-// @klo9klo9kloi
+
+// added
 void cSceneImitate::SetRandKinMotionTime()
 {
-        double lower = 0.5;
-        double upper = 2.0;
-        double rand_time = cMathUtil::RandDouble(mBaseMotionDuration*lower, mBaseMotionDuration*upper);
-        const auto& kin_char = GetKinChar();
-        kin_char->SetMotionDuration(rand_time*mBaseMotionDuration);
+    double lower = 0.5;
+    double upper = 2.0;
+    double rand_time = cMathUtil::RandDouble(mBaseMotionDuration*lower, mBaseMotionDuration*upper);
+    const auto& kin_char = GetKinChar();
+    kin_char->SetMotionDuration(rand_time*mBaseMotionDuration);
 }
