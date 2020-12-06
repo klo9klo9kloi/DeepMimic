@@ -126,10 +126,15 @@ double cSceneImitate::CalcRewardImitate(const cSimCharacter& sim_char, const cKi
 	return reward;
 }
 
-void cSceneImitate::CalcStates(int agent_id, double timestep, double totalTime, double stateSize) 
+void cSceneImitate::CalcStates() 
 {	
 	const cSimCharacter* sim_char = GetAgentChar(agent_id);
 	const auto& kin_char = GetKinChar();
+	double totalTime = kin_char.GetMotionDuration();
+	double timestep = 1/60;
+	int agent_id = 0;
+    int statesize = cRLSceneSimChar::GetStateSize(agent_id);
+
 	int numStates = totalTime/timestep; //round this off if necessary
 	double startTime = kin_char->GetTime(); // make sure this is zero as this func is called in the beginning
 	assert(startTime == 0.0);
@@ -370,7 +375,7 @@ void cSceneImitate::Init()
 
 	cRLSceneSimChar::Init();
 	InitJointWeights();
-	CalcStates(0, )// fill in timestep totaltime and statesize 
+	CalcStates()// fill in timestep totaltime and statesize 
 
 }
 
@@ -532,7 +537,7 @@ void cSceneImitate::ResetCharacters()
 	ResetKinChar();
 	if (EnableSyncChar())
 	{	
-		CalcStates(0, ) // fill in the rest here;
+		CalcStates() // fill in the rest here;
 		SyncCharacters();
 	}
 }
