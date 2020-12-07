@@ -25,7 +25,10 @@
 --sync_char_root_pos true
 --sync_char_root_rot false
 
---agent_files data/agents/ct_agent_humanoid3d_ppo.txt
+--agent_files data/agents/ct_agent_humanoid_ppo.txt
+
+--augment true
+--augment_k 5
 
 --output_path output
 #--int_output_path output/intermediate

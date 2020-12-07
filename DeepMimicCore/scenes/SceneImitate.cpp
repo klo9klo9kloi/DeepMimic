@@ -131,24 +131,23 @@ double cSceneImitate::CalcRewardImitate(const cSimCharacter& sim_char, const cKi
 void cSceneImitate::CalcStates() 
 {	
 	int agent_id = 0;
-	const cSimCharacter* sim_char = GetAgentChar(agent_id);
 	const auto& kin_char = GetKinChar();
 	double totalTime = kin_char->GetMotionDuration();
-	double timestep = 1/60;
+	double timestep = (double)1/60;
     int state_size = cRLSceneSimChar::GetStateSize(agent_id);
 
-	int numStates = totalTime/timestep; //round this off if necessary
+	int numStates = int(totalTime/timestep); //round this off if necessary
 	double startTime = kin_char->GetTime(); // make sure this is zero as this func is called in the beginning
 	assert(startTime == 0.0);
-	Eigen::VectorXd states =  Eigen::VectorXd::Zero(numStates*state_size);
+	assert(state_size > 0);
+	mStates = Eigen::VectorXd::Zero(numStates*state_size);
 	for (int i = 0; i < numStates; i++) {
 		Eigen::VectorXd state;
 		SyncCharacters();
-		RecordState(agent_id, state);
-		states.segment(i*state_size, state_size) = state;
+		cRLSceneSimChar::RecordState(agent_id, state);
+		mStates.segment(i*state_size, state_size) = state;
 		kin_char->Update(timestep);
 	}
-	mStates = states; // define mStates in .hfile
 	kin_char->SetTime(startTime);
 	kin_char->Pose(startTime);
 	SyncCharacters();
@@ -156,145 +155,52 @@ void cSceneImitate::CalcStates()
 
 Eigen::VectorXd cSceneImitate::CalcAugmentedStates() const
 {	
-	// here startState is the state number from the beginning
-	//numStates is the number of future states to collect from startState onwards
+	// here start_state is the state number from t+1
+	//mK is the number of future states to collect from start_state onwards
 	//statesize is the size of a single state.
-	double timestep = 1/60;
+	double timestep = (double)1/60;
 	int agent_id = 0;
     int state_size = cRLSceneSimChar::GetStateSize(agent_id);
 
     const auto& kin_char = GetKinChar();
-    double curr_time = kin_char->GetTime();
-    int startState = curr_time/timestep; 
+    double phase = kin_char->GetPhase();
+    double total_time = kin_char->GetMotionDuration();
+    int start_state = int(phase*total_time/timestep) + 1; 
 
-	return mStates.segment(startState*state_size, mK*state_size);
+    Eigen::VectorXd future_k = Eigen::VectorXd::Zero(state_size*mK);
+    int num_states = mStates.size()/state_size;
+    
+    if (start_state > num_states - mK && start_state < num_states)
+    {
+    	int states_remaining = num_states - start_state;
+    	future_k.segment(0, states_remaining*state_size) = mStates.segment(start_state*state_size, state_size*states_remaining);
+    	for(int i = states_remaining; i < mK; i++) {
+    		future_k.segment(i*state_size, state_size) = mStates.segment((num_states-1)*state_size, state_size);
+    	}
+
+    } else if (start_state >= num_states)
+    {	
+    	if (start_state - num_states > 1) 
+    	{
+    		printf("WARNING! abnormal start_state and num_states diff detected %d", num_states-start_state);
+    	}
+    	for(int i = 0; i < mK; i++) {
+    		future_k.segment(i*state_size, state_size) = mStates.segment((num_states-1)*state_size, state_size);
+    	}
+    } else 
+    {
+    	future_k = mStates.segment(start_state*state_size, state_size*mK);
+    }
+	return future_k;
 
 }
-
-/*
-Eigen::VectorXd cSceneImitate::CalcAugmentedStates(double timestep, int state_size) const
-{	
-	const auto& kin_char = GetKinChar();
-	Eigen::VectorXd augmented = Eigen::VectorXd::Zero(mK*state_size);
-	Eigen::VectorXd out_state;
-	double reset = kin_char->GetTime();
-	for (int i = 0; i < mK; i++) {
-		kin_char->Update(timestep);
-		augmented.segment(i*mK,mK) = CalculateState(out_state, state_size)
-		 
-	}
-	
-	kin_char->SetTime(reset);
-	kin_char->Pose(reset);
-	return augmented;
-	
-}
-
-void cSceneImitate::CalculateState(Eigen::VectorXd& out_state, int state_size) const
-{
-	//int state_size = GetStateSize();
-	// fill with nans to make sure we don't forget to set anything
-	out_state = std::numeric_limits<double>::quiet_NaN() * Eigen::VectorXd::Ones(state_size);
-
-	Eigen::VectorXd ground;
-	Eigen::VectorXd pose;
-	Eigen::VectorXd vel;
-	BuildStatePose(pose);
-	BuildStateVel(vel);
-
-	int pose_offset = GetStatePoseOffset();
-	int pose_size = GetStatePoseSize();
-	int vel_offset = GetStateVelOffset();
-	int vel_size = GetStateVelSize();
-
-	out_state.segment(pose_offset, pose_size) = pose;
-	out_state.segment(vel_offset, vel_size) = vel;
-}
-
-void cSceneImitate::BuildStatePose(Eigen::VectorXd& out_pose) const
-{	
-	const auto& mChar = GetKinChar();
-	tMatrix origin_trans = mChar->BuildOriginTrans();
-
-	tVector root_pos = mChar->GetRootPos();
-	tVector root_pos_rel = root_pos;
-
-	root_pos_rel[3] = 1;
-	root_pos_rel = origin_trans * root_pos_rel;
-	root_pos_rel[3] = 0;
-
-	out_pose = Eigen::VectorXd::Zero(GetStatePoseSize());
-	out_pose[0] = root_pos_rel[1];
-	
-	int idx = 1;
-	int num_parts = mChar->GetNumBodyParts();
-	for (int i = 1; i < num_parts; ++i)
-	{
-		if (mChar->IsValidBodyPart(i))
-		{
-			const auto& curr_part = mChar->GetBodyPart(i);
-			tVector curr_pos = curr_part->GetPos();
-
-			curr_pos[3] = 1;
-			curr_pos = origin_trans * curr_pos;
-			curr_pos[3] = 0;
-			curr_pos -= root_pos_rel;
-
-			out_pose.segment(idx, mPosDim) = curr_pos.segment(0, mPosDim);
-			idx += mPosDim;
-		}
-	}
-}
-
-void cSceneImitate::BuildStateVel(Eigen::VectorXd& out_vel) const
-{	
-	const auto& mChar = GetKinChar();
-	out_vel.resize(GetStateVelSize());
-	tMatrix origin_trans = mChar->BuildOriginTrans();
-
-	tVector root_pos = mChar->GetRootPos();
-	
-	int idx = 0;
-	int num_parts = mChar->GetNumBodyParts();
-	for (int i = 0; i < num_parts; ++i)
-	{
-		tVector curr_vel = mChar->GetBodyPartVel(i);
-		curr_vel = origin_trans * curr_vel;
-		out_vel.segment(idx, mPosDim) = curr_vel.segment(0, mPosDim);
-		idx += mPosDim;
-	}
-}
-
-int cSceneImitate::GetStatePoseOffset() const
-{
-	return 0;
-}
-
-int cSceneImitate::GetStateVelOffset() const
-{
-	return GetStatePoseOffset() + GetStatePoseSize();
-}
-
-int cSceneImitate::GetStatePoseSize() const
-{
-	const auto& mChar = GetKinChar();
-	return mChar->GetNumBodyParts() * mPosDim - 1; // -1 for root x
-}
-
-int cSceneImitate::GetStateVelSize() const
-{
-	const auto& mChar = GetKinChar();
-	return mChar->GetNumBodyParts() * mPosDim;
-}
-*/
-
 
 void cSceneImitate::RecordState(int agent_id, Eigen::VectorXd& out_state) const
 {
 	cRLSceneSimChar::RecordState(agent_id, out_state);
 	if(mAugment) {
 		int state_size = static_cast<int>(out_state.size());
-		Eigen::VectorXd augmented = std::numeric_limits<double>::quiet_NaN() * Eigen::VectorXd::Ones(mK*state_size); 
+		Eigen::VectorXd augmented = std::numeric_limits<double>::quiet_NaN() * Eigen::VectorXd::Ones((mK+1)*state_size); 
 		augmented.segment(0, state_size) = out_state;
 
 		Eigen::VectorXd future_k = CalcAugmentedStates();
@@ -308,7 +214,7 @@ int cSceneImitate::GetStateSize(int agent_id) const
 {
 	int base_state_size = cRLSceneSimChar::GetStateSize(agent_id);
 	if (mAugment) {
-		return mK * base_state_size;
+		return (mK+1) * base_state_size;
 	}
 	return base_state_size;
 }
@@ -320,10 +226,10 @@ void cSceneImitate::BuildStateOffsetScale(int agent_id, Eigen::VectorXd& out_off
 		int offset_size = static_cast<int>(out_offset.size());
 		int scale_size = static_cast<int>(out_scale.size());
 
-		Eigen::VectorXd augmented_offset = std::numeric_limits<double>::quiet_NaN() * Eigen::VectorXd::Ones(mK*offset_size);
-		Eigen::VectorXd augmented_scale = std::numeric_limits<double>::quiet_NaN() * Eigen::VectorXd::Ones(mK*scale_size);
+		Eigen::VectorXd augmented_offset = std::numeric_limits<double>::quiet_NaN() * Eigen::VectorXd::Ones((mK+1)*offset_size);
+		Eigen::VectorXd augmented_scale = std::numeric_limits<double>::quiet_NaN() * Eigen::VectorXd::Ones((mK+1)*scale_size);
 
-		for (int i = 0; i < mK; i++) {
+		for (int i = 0; i < mK+1; i++) {
 			augmented_offset.segment(i*offset_size, offset_size) = out_offset;
 			augmented_scale.segment(i*scale_size, scale_size) = out_scale;
 		}
@@ -339,9 +245,9 @@ void cSceneImitate::BuildStateNormGroups(int agent_id, Eigen::VectorXi& out_grou
 	if (mAugment) {
 		int group_size = static_cast<int>(out_groups.size());
 
-		Eigen::VectorXi augmented_groups = std::numeric_limits<int>::quiet_NaN() * Eigen::VectorXi::Ones(mK*group_size);
+		Eigen::VectorXi augmented_groups = std::numeric_limits<int>::quiet_NaN() * Eigen::VectorXi::Ones((mK+1)*group_size);
 
-		for (int i = 0; i < mK; i++) {
+		for (int i = 0; i < mK+1; i++) {
 			augmented_groups.segment(i*group_size, group_size) = out_groups;
 		}
 
