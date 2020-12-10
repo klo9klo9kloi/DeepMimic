@@ -48,5 +48,8 @@
 		"Noise": 0.05,
 		"NoiseInternal": 0,
 		"Temp": 0.001
-	}
+	},
+
+	"AugmentK": 5,
+	"SamplePool": 30,
 }

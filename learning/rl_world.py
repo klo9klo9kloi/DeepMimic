@@ -121,7 +121,7 @@ class RLWorld(object):
             if self.max_ep > 1:
                 assert(len(self.agents) > 0 and (self.agents[0] is not None))
                 motion_states = self.env.get_all_states(self.agents[0].id)
-                time_seeds = self.agents[0].sample_time_seeds(motion_states, 1/60)
+                time_seeds = self.agents[0].sample_time_seeds(motion_states, 1/60, self.max_ep)
                 self.env.set_time_seeds(self.agents[0].id, time_seeds)
         return
 

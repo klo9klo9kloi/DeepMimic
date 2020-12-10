@@ -55,6 +55,7 @@ public:
 	virtual int GetGoalSize(int agent_id) const;
 	virtual int GetActionSize(int agent_id) const;
 	virtual int GetNumActions(int agent_id) const; // for discrete actions
+	virtual std::vector<double> GetAllStates(int agent_id) const;
 
 	virtual std::vector<double> BuildStateOffset(int agent_id) const;
 	virtual std::vector<double> BuildStateScale(int agent_id) const;
