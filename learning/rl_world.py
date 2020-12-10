@@ -15,7 +15,8 @@ class RLWorld(object):
         self.parse_args(arg_parser)
 
         self.build_agents()
-        
+        self.max_ep = 1
+        self.ep_done = 0
         return
 
     def get_enable_training(self):
@@ -40,6 +41,8 @@ class RLWorld(object):
     
     def parse_args(self, arg_parser):
         self.train_agents = self.arg_parser.parse_bools('train_agents')
+        self.max_ep = self.arg_parser.parse_ints('max_ep')
+        self.max_ep = self.max_ep[0] if len(self.max_exp) > 0 else 1
         num_agents = self.env.get_num_agents()
         assert(len(self.train_agents) == num_agents or len(self.train_agents) == 0)
 
@@ -111,7 +114,15 @@ class RLWorld(object):
         return
 
     def _reset_env(self):
+        self.ep_done += 1
         self.env.reset()
+        if self.ep_done == self.max_ep - 1:
+            self.ep_done = 0
+            if self.max_ep > 1:
+                assert(len(self.agents) > 0 and (self.agents[0] is not None))
+                motion_states = self.env.get_all_states(self.agents[0].id)
+                time_seeds = self.agents[0].sample_time_seeds(motion_states, 1/60)
+                self.env.set_time_seeds(self.agents[0].id, time_seeds)
         return
 
     def _reset_agents(self):

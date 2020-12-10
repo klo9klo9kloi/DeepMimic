@@ -606,6 +606,15 @@ const std::shared_ptr<cRLScene>& cDeepMimicCore::GetRLScene() const
 	return mRLScene;
 }
 
+void cDeepMimicCore::SetTimeSeeds(int agent_id, const std::vector<double>& time_seeds) 
+{
+	const auto& rl_scene = GetRLScene();
+	if (rl_scene != nullptr)
+	{
+		rl_scene->SetTimeSeeds(agent_id, time_seeds);
+	}	
+}
+
 void cDeepMimicCore::ConvertVector(const Eigen::VectorXd& in_vec, std::vector<double>& out_vec) const
 {
 	int size = static_cast<int>(in_vec.size());
