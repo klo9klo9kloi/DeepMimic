@@ -45,6 +45,8 @@ protected:
 	double mBaseMotionDuration; // added
 	int mK; //added
 	int mPosDim;
+	int max_eps; //added
+	int episodes_done; //added
 	Eigen::VectorXd mStates;
 
 	virtual bool BuildCharacters();

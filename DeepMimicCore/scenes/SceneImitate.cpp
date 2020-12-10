@@ -271,6 +271,8 @@ cSceneImitate::cSceneImitate()
     mK = 0; 
     mAugment = false;
     mEnableRandTiming = false;
+    episodes_done = 0;
+    max_eps = 10; //PLACEHOLDER VALUE
 }
 
 cSceneImitate::~cSceneImitate()
@@ -289,6 +291,7 @@ void cSceneImitate::ParseArgs(const std::shared_ptr<cArgParser>& parser)
 	parser->ParseInt("augment_k", mK); //added
 	parser->ParseBool("augment", mAugment); //added
 	parser->ParseBool("enable_rand_timing", mEnableRandTiming);
+	//parser->ParseInt("max_eps",max_eps);
 }
 
 void cSceneImitate::Init()
@@ -472,18 +475,24 @@ void cSceneImitate::ResetCharacters()
 }
 
 void cSceneImitate::ResetKinChar()
-{	
-	const cSimCharacter::tParams& char_params = mCharParams[0];
+{
+	episodes_done += 1;
 	const auto& kin_char = GetKinChar();
-	kin_char->Reset();  // reset must happen first now, since it switches reference motions -> motion duration changes
-	kin_char->SetOriginRot(tQuaternion::Identity());
-	kin_char->SetOriginPos(char_params.mInitPos); // reset origin
+	const cSimCharacter::tParams& char_params = mCharParams[0];
+	if (episodes_done >= max_eps){
 
-	if (EnabledRandTiming()) {
-		SetRandKinMotionTime(); //dependent on new motion duration
-	}
-	if (mAugment) {
-		CalcStates(); // dependent on new motion duration
+
+		kin_char->Reset();  // reset must happen first now, since it switches reference motions -> motion duration changes
+		kin_char->SetOriginRot(tQuaternion::Identity());
+		kin_char->SetOriginPos(char_params.mInitPos); // reset origin
+
+		if (EnabledRandTiming()) {
+			SetRandKinMotionTime(); //dependent on new motion duration
+		}
+		if (mAugment) {
+			CalcStates(); // dependent on new motion duration
+		}
+		episodes_done = 0;
 	}
     
 	double rand_time = CalcRandKinResetTime(); //dependent on new motion duration
