@@ -22,7 +22,7 @@ public:
 
 	virtual std::string GetName() const;
 
-	virtual void SetTimeSeeds(int agent_id, const Eigen::VectorXd& time_seeds) = 0;
+	virtual void SetTimeSeeds(int agent_id, const Eigen::VectorXd& time_seeds);
 
 protected:
 

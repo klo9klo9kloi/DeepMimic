@@ -42,7 +42,7 @@ class RLWorld(object):
     def parse_args(self, arg_parser):
         self.train_agents = self.arg_parser.parse_bools('train_agents')
         self.max_ep = self.arg_parser.parse_ints('max_ep')
-        self.max_ep = self.max_ep[0] if len(self.max_exp) > 0 else 1
+        self.max_ep = self.max_ep[0] if len(self.max_ep) > 0 else 1
         num_agents = self.env.get_num_agents()
         assert(len(self.train_agents) == num_agents or len(self.train_agents) == 0)
 
