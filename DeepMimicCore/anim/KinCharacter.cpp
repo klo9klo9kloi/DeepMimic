@@ -191,15 +191,15 @@ bool cKinCharacter::LoadMotion(const std::string& motion_file)
 	return succ;
 }
 
-void cKinCharacter::SetRandomMotion(){
+void cKinCharacter::SetRandomMotion() {
 	int numElems = mMotionVec.size();
 	int index = cMathUtil::RandInt(0, numElems);
 	mMotion = mMotionVec[index];
+	mMotionIdx = index;
 	mCycleRootDelta = CalcCycleRootDelta();
 	Pose(mTime);
 	mPose0 = GetPose();
 	mVel0 = GetVel();
-
 }
 
 const cMotion& cKinCharacter::GetMotion() const

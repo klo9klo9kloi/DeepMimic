@@ -298,7 +298,9 @@ void cSceneImitate::Init()
 
 	cRLSceneSimChar::Init();
 	InitJointWeights();
-	CalcStates(); 
+	if (mAugment) {
+		CalcStates(); 
+	}
 }
 
 double cSceneImitate::CalcReward(int agent_id) const
@@ -480,8 +482,10 @@ void cSceneImitate::ResetKinChar()
 	if (EnabledRandTiming()) {
 		SetRandKinMotionTime(); //dependent on new motion duration
 	}
-
-    CalcStates(); // dependent on new motion duration
+	if (mAugment) {
+		CalcStates(); // dependent on new motion duration
+	}
+    
 	double rand_time = CalcRandKinResetTime(); //dependent on new motion duration
 
 	kin_char->SetTime(rand_time);

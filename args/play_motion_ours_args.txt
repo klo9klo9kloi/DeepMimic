@@ -1,4 +1,4 @@
 --scene kin_char
 
 --character_file data/characters/humanoid3d_body_only.txt
---motion_file data/motions/MPI_Limits_armsonly
+--motion_file data/motions/test_armsonly
