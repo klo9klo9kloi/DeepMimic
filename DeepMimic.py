@@ -12,12 +12,14 @@ from util.arg_parser import ArgParser
 from util.logger import Logger
 import util.mpi_util as MPIUtil
 import util.util as Util
-
+import cv2
+from PIL import Image
 # Dimensions of the window we are drawing into.
 win_width = 800
 win_height = int(win_width * 9.0 / 16.0)
 reshaping = False
-
+out = cv2.VideoWriter('outpy.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 10, (win_width,win_height))
+num_frames = 0
 # anim
 fps = 60
 update_timestep = 1.0 / fps
@@ -79,12 +81,27 @@ def update_world(world, time_elapsed):
             break
     return
 
+def snap():
+    videopath = "."
+    pixels=[]
+    print(os.path.dirname(videopath))
+    screenshot = glReadPixels(0,0,win_width,win_height,GL_RGBA,GL_UNSIGNED_BYTE)
+    snapshot = Image.frombuffer("RGBA",(win_width,win_height),screenshot,"raw","RGBA",0,0)
+    snapshot.save("./temp.png")
+    load = cv2.imread("./temp.png")
+    out.write(load)
 def draw():
     global reshaping
-
+    global num_frames
     update_intermediate_buffer()
     world.env.draw()
-    
+    if num_frames < 201:
+        num_frames+=1
+        print(num_frames)
+        if num_frames == 200:
+            out.release()
+            return
+        snap()
     glutSwapBuffers()
     reshaping = False
 
@@ -228,9 +245,14 @@ def toggle_training():
 def keyboard(key, x, y):
     key_val = int.from_bytes(key, byteorder='big')
     world.env.keyboard(key_val, x, y)
-
+    print('keyboarded')
     if (key == b'\x1b'): # escape
+        # glutDestroyWindow()
+        print('r')
         shutdown()
+        print('shut')
+        glutLeaveMainLoop()
+        print('done');
     elif (key == b' '):
         toggle_animate();
     elif (key == b'>'):
