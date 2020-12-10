@@ -611,7 +611,9 @@ void cDeepMimicCore::SetTimeSeeds(int agent_id, const std::vector<double>& time_
 	const auto& rl_scene = GetRLScene();
 	if (rl_scene != nullptr)
 	{
-		rl_scene->SetTimeSeeds(agent_id, time_seeds);
+		Eigen::VectorXd in_time_seeds;
+		ConvertVector(time_seeds, in_time_seeds);
+		rl_scene->SetTimeSeeds(agent_id, in_time_seeds);
 	}	
 }
 

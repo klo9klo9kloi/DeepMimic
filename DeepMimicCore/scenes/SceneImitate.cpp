@@ -255,7 +255,7 @@ void cSceneImitate::BuildStateNormGroups(int agent_id, Eigen::VectorXi& out_grou
 	}
 }
 
-void cSceneImitate::SetTimeSeeds(int agent_id, std::vector<double>& time_seeds) 
+void cSceneImitate::SetTimeSeeds(int agent_id, const Eigen::VectorXd& time_seeds)
 {
 	mTimeSeeds = time_seeds;
 }
@@ -426,10 +426,10 @@ void cSceneImitate::BuildKinChar()
 		assert(false);
 	}
     mBaseMotionDuration = mKinChar->GetMotionDuration(); //@klo9klo9kloi
-    mTimeSeeds = std::vector<double>();
+    mTimeSeeds = Eigen::VectorXd::Ones(mMaxEp);
     for (int i = 0; i < mMaxEp; i++){
     	double rand_time = CalcRandKinResetTime();
-    	mTimeSeeds.push_back(rand_time);
+    	mTimeSeeds[i] = rand_time;
     }
 }
 
@@ -487,10 +487,10 @@ void cSceneImitate::ResetCharacters()
 void cSceneImitate::ResetKinChar()
 {	
 	mEpDone += 1;
+	const cSimCharacter::tParams& char_params = mCharParams[0];
+	const auto& kin_char = GetKinChar();
 	if (mEpDone == mMaxEp) {
 		mEpDone = 0;
-		const cSimCharacter::tParams& char_params = mCharParams[0];
-		const auto& kin_char = GetKinChar();
 		kin_char->Reset();  // reset must happen first now, since it switches reference motions -> motion duration changes
 		kin_char->SetOriginRot(tQuaternion::Identity());
 		kin_char->SetOriginPos(char_params.mInitPos); // reset origin
