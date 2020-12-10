@@ -28,12 +28,13 @@ public:
 	virtual int GetStateSize(int agent_id) const;
 	virtual void BuildStateOffsetScale(int agent_id, Eigen::VectorXd& out_offset, Eigen::VectorXd& out_scale) const;
 	virtual void BuildStateNormGroups(int agent_id, Eigen::VectorXi& out_groups) const;
+	virtual void SetTimeSeeds(int agent_id, const Eigen::VectorXd& time_seeds);
 
 protected:
 
 	std::string mMotionFile;
 	std::shared_ptr<cKinCharacter> mKinChar;
-
+	
 	Eigen::VectorXd mJointWeights;
 	bool mEnableRandRotReset;
 	bool mSyncCharRootPos;
@@ -45,7 +46,10 @@ protected:
 	double mBaseMotionDuration; // added
 	int mK; //added
 	int mPosDim;
-	Eigen::VectorXd mStates;
+	int mMaxEp; //added
+	int mEpDone; //added
+	Eigen::VectorXd mStates; //added
+	Eigen::VectorXd mTimeSeeds; //added
 
 	virtual bool BuildCharacters();
 

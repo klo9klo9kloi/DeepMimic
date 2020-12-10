@@ -75,7 +75,7 @@ class PPOAgent(PGAgent):
                 self.a_mean_tf = self._build_net_actor(actor_net_name, actor_init_output_scale)
             with tf.variable_scope('critic'):
                 self.critic_tf = self._build_net_critic(critic_net_name)
-                
+
         if (self.a_mean_tf != None):
             Logger.print('Built actor net: ' + actor_net_name)
 
@@ -365,3 +365,19 @@ class PPOAgent(PGAgent):
         }
         self.sess.run(self._actor_stepsize_update_op, feed)
         return
+
+    def sample_time_seeds(self, motion_states, update_timestep):
+        # general structure
+
+        feed_t = {
+            self.s_tf: s_t,
+        }
+
+        feed_tpk = {
+            self.s_tf: s_tpk,
+        }
+
+        # make sure to prevent gradient calc
+        rew_t = self.sess.run([self.critic_tf], feed_t) # first_arg = what you want as output, second_arg = what you input
+        rew_tpk = self.sess.run([self.critic_tf], feed_tpk)
+        # ... diffference

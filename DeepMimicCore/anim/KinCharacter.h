@@ -74,6 +74,7 @@ public:
 protected:
 	double mTime;
 	int numMotions;
+	int mMotionIdx;
 	cMotion mMotion;
 	std::vector<cMotion> mMotionVec;
 	tVector mCycleRootDelta;

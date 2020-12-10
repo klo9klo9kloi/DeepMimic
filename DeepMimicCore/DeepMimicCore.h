@@ -47,6 +47,7 @@ public:
 	virtual std::vector<double> RecordState(int agent_id) const;
 	virtual std::vector<double> RecordGoal(int agent_id) const;
 	virtual void SetAction(int agent_id, const std::vector<double>& action);
+	virtual void SetTimeSeeds(int agent_id, const std::vector<double>& time_seeds); // added
 	virtual void LogVal(int agent_id, double val);
 
 	virtual int GetActionSpace(int agent_id) const;

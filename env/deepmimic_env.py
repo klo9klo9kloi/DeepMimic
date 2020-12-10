@@ -164,3 +164,10 @@ class DeepMimicEnv(Env):
     def set_mode(self, mode):
         self._core.SetMode(mode.value)
         return
+
+    def set_time_seeds(self, agent_id, time_seeds):
+        self._core.SetTimeSeeds(agent_id, time_seeds)
+        return
+
+    def get_all_states(self, agent_id):
+        return self._core.GetAllStates(agent_id)

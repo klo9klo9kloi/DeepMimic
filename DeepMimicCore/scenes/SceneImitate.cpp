@@ -255,6 +255,11 @@ void cSceneImitate::BuildStateNormGroups(int agent_id, Eigen::VectorXi& out_grou
 	}
 }
 
+void cSceneImitate::SetTimeSeeds(int agent_id, const Eigen::VectorXd& time_seeds)
+{
+	mTimeSeeds = time_seeds;
+}
+
 // ----------------------------- added --------------------------
 
 cSceneImitate::cSceneImitate()
@@ -269,6 +274,8 @@ cSceneImitate::cSceneImitate()
     mBaseMotionDuration = 0;
     mPosDim = 3;
     mK = 0; 
+    mEpDone = 0;
+    mMaxEp = 1;
     mAugment = false;
     mEnableRandTiming = false;
 }
@@ -288,7 +295,8 @@ void cSceneImitate::ParseArgs(const std::shared_ptr<cArgParser>& parser)
 	parser->ParseDouble("hold_end_frame", mHoldEndFrame);
 	parser->ParseInt("augment_k", mK); //added
 	parser->ParseBool("augment", mAugment); //added
-	parser->ParseBool("enable_rand_timing", mEnableRandTiming);
+	parser->ParseBool("enable_rand_timing", mEnableRandTiming); //added
+	parser->ParseInt("max_ep", mMaxEp); //added
 }
 
 void cSceneImitate::Init()
@@ -298,7 +306,9 @@ void cSceneImitate::Init()
 
 	cRLSceneSimChar::Init();
 	InitJointWeights();
-	CalcStates(); 
+	if (mAugment) {
+		CalcStates(); 
+	}
 }
 
 double cSceneImitate::CalcReward(int agent_id) const
@@ -416,6 +426,11 @@ void cSceneImitate::BuildKinChar()
 		assert(false);
 	}
     mBaseMotionDuration = mKinChar->GetMotionDuration(); //@klo9klo9kloi
+    mTimeSeeds = Eigen::VectorXd::Ones(mMaxEp);
+    for (int i = 0; i < mMaxEp; i++){
+    	double rand_time = CalcRandKinResetTime();
+    	mTimeSeeds[i] = rand_time;
+    }
 }
 
 bool cSceneImitate::BuildKinCharacter(int id, std::shared_ptr<cKinCharacter>& out_char) const
@@ -471,18 +486,30 @@ void cSceneImitate::ResetCharacters()
 
 void cSceneImitate::ResetKinChar()
 {	
+	mEpDone += 1;
 	const cSimCharacter::tParams& char_params = mCharParams[0];
 	const auto& kin_char = GetKinChar();
-	kin_char->Reset();  // reset must happen first now, since it switches reference motions -> motion duration changes
-	kin_char->SetOriginRot(tQuaternion::Identity());
-	kin_char->SetOriginPos(char_params.mInitPos); // reset origin
+	if (mEpDone == mMaxEp) {
+		mEpDone = 0;
+		kin_char->Reset();  // reset must happen first now, since it switches reference motions -> motion duration changes
+		kin_char->SetOriginRot(tQuaternion::Identity());
+		kin_char->SetOriginPos(char_params.mInitPos); // reset origin
 
-	if (EnabledRandTiming()) {
-		SetRandKinMotionTime(); //dependent on new motion duration
+		if (EnabledRandTiming()) {
+			SetRandKinMotionTime(); //dependent on new motion duration
+		}
+		if (mAugment) {
+			CalcStates(); // dependent on new motion duration
+		}
 	}
 
-    CalcStates(); // dependent on new motion duration
-	double rand_time = CalcRandKinResetTime(); //dependent on new motion duration
+	double rand_time; //dependent on new motion duration
+	if (mEpDone == 0) {
+		rand_time = CalcRandKinResetTime(); 
+
+	} else {
+		rand_time = mTimeSeeds[mEpDone-1];
+	}
 
 	kin_char->SetTime(rand_time);
 	kin_char->Pose(rand_time);
