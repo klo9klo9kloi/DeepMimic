@@ -1,5 +1,13 @@
 --scene imitate
 
+--time_lim_min 0.5
+--time_lim_max 0.5
+--time_lim_exp 0.2
+--time_end_lim_min 20
+--time_end_lim_max 20
+--time_end_lim_exp 50
+--anneal_samples 32000000
+
 --num_update_substeps 10
 --num_sim_substeps 2
 --world_scale 4
@@ -13,15 +21,11 @@
 
 --char_ctrls ct_pd
 --char_ctrl_files data/controllers/try2_ctrl.txt
---motion_file data/motions/test_armsonly
+--motion_file data/motions/dance_b
 --sync_char_root_pos true
 --sync_char_root_rot false
 
 --agent_files data/agents/ct_agent_ours_ppo.txt
---augment true
---augment_k 5
 
---train_agents false
-
-
---model_files maxep_arms_exp/agent0_model.ckpt
+--output_path vanilla
+#--int_output_path output/intermediate
