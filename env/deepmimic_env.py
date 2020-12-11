@@ -166,7 +166,7 @@ class DeepMimicEnv(Env):
         return
 
     def set_time_seeds(self, agent_id, time_seeds):
-        print("setting time seeds " + str(time_seeds))
+        # print("setting time seeds " + str(time_seeds))
         self._core.SetTimeSeeds(agent_id, time_seeds)
         return
 

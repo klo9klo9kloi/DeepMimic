@@ -379,14 +379,16 @@ class PPOAgent(PGAgent):
         assert(len(motion_states) - 2*k-2 > 0)
 
         # calc state values
-        state_samples = np.random.randint(len(motion_states)-2*k-2, size=self.sample_pool)
+        rng = np.random.default_rng()
+        state_samples = rng.choice(len(motion_states)-2*k-2, size=self.sample_pool, replace=False)
         states = np.array([motion_states[idx:idx+k+1].flatten() for idx in state_samples])
         states_pk = np.array([motion_states[idx+k+1:idx+2*k+2].flatten() for idx in state_samples])
 
         val_t = self._eval_critic(states, None)
         val_tpk = self._eval_critic(states_pk, None)
         val_diff = val_t - val_tpk
-        print(val_diff)
+
+       	val_diff = (val_diff - val_diff.mean())/(val_diff.std() + 1e-8)
 
         # sample pased on val diff
         # diff_e = np.exp(1/(val_diff+1e-8))

@@ -192,6 +192,7 @@ bool cKinCharacter::LoadMotion(const std::string& motion_file)
 }
 
 void cKinCharacter::SetRandomMotion() {
+	// printf("Setting random motion \n");
 	int numElems = mMotionVec.size();
 	int index = cMathUtil::RandInt(0, numElems);
 	mMotion = mMotionVec[index];

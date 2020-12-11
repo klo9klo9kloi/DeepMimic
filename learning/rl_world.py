@@ -52,9 +52,6 @@ class RLWorld(object):
         if len(augment) > 0:
             k = self.arg_parser.parse_ints('augment_k')
             self.k = k[0] if len(k) > 0 else 1
-        
-        print("rl_world k: %d" % self.k)
-        print("rl_world max_ep: %d" % self.max_ep)
 
         # end added
         num_agents = self.env.get_num_agents()
@@ -130,9 +127,9 @@ class RLWorld(object):
     def _reset_env(self):
         self.ep_done += 1
         self.env.reset()
-        print('rl world reset env')
-        print('rl world ep done %d' % self.ep_done)
-        print('rl world max ep %d' % self.max_ep)
+        # print('rl world reset env')
+        # print('rl world ep done %d' % self.ep_done)
+        # print('rl world max ep %d' % self.max_ep)
         if self.ep_done == self.max_ep:
             self.ep_done = 0
             if self.max_ep > 1:
@@ -141,6 +138,7 @@ class RLWorld(object):
                 motion_states = self.env.get_all_states(self.agents[0].id)
                 time_seeds = self.agents[0].sample_time_seeds(motion_states, 1/60, self.max_ep, self.k)
                 self.env.set_time_seeds(self.agents[0].id, time_seeds)
+        # print()
         return
 
     def _reset_agents(self):
