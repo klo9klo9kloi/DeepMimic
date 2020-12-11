@@ -22,7 +22,8 @@ public:
 
 	virtual std::string GetName() const;
 
-	virtual void SetTimeSeeds(int agent_id, const Eigen::VectorXd& time_seeds);
+	virtual void SetTimeSeeds(int agent_id, const Eigen::VectorXd& time_seeds); //added
+	virtual void GetAllStates(int agent_id, Eigen::VectorXd& out_all_states) const; //added
 
 protected:
 

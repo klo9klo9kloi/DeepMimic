@@ -12,11 +12,15 @@ class RLWorld(object):
         self.arg_parser = arg_parser
         self._enable_training = True
         self.train_agents = []
+        #added
+        self.max_ep = 1
+        self.k = 0
+        self.ep_done = 0
+        # end added
         self.parse_args(arg_parser)
 
         self.build_agents()
-        self.max_ep = 1
-        self.ep_done = 0
+
         return
 
     def get_enable_training(self):
@@ -41,8 +45,18 @@ class RLWorld(object):
     
     def parse_args(self, arg_parser):
         self.train_agents = self.arg_parser.parse_bools('train_agents')
-        self.max_ep = self.arg_parser.parse_ints('max_ep')
-        self.max_ep = self.max_ep[0] if len(self.max_ep) > 0 else 1
+        # added
+        max_ep = self.arg_parser.parse_ints('max_ep')
+        self.max_ep = max_ep[0] if len(max_ep) > 0 else 1
+        augment = self.arg_parser.parse_bools('augment')
+        if len(augment) > 0:
+            k = self.arg_parser.parse_ints('augment_k')
+            self.k = k[0] if len(k) > 0 else 1
+        
+        print("rl_world k: %d" % self.k)
+        print("rl_world max_ep: %d" % self.max_ep)
+
+        # end added
         num_agents = self.env.get_num_agents()
         assert(len(self.train_agents) == num_agents or len(self.train_agents) == 0)
 
@@ -116,12 +130,16 @@ class RLWorld(object):
     def _reset_env(self):
         self.ep_done += 1
         self.env.reset()
-        if self.ep_done == self.max_ep - 1:
+        print('rl world reset env')
+        print('rl world ep done %d' % self.ep_done)
+        print('rl world max ep %d' % self.max_ep)
+        if self.ep_done == self.max_ep:
             self.ep_done = 0
             if self.max_ep > 1:
                 assert(len(self.agents) > 0 and (self.agents[0] is not None))
+                assert(self.k > 0), "max_ep incompatible with k = 0"
                 motion_states = self.env.get_all_states(self.agents[0].id)
-                time_seeds = self.agents[0].sample_time_seeds(motion_states, 1/60, self.max_ep)
+                time_seeds = self.agents[0].sample_time_seeds(motion_states, 1/60, self.max_ep, self.k)
                 self.env.set_time_seeds(self.agents[0].id, time_seeds)
         return
 

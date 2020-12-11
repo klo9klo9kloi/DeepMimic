@@ -21,11 +21,11 @@
 
 --char_ctrls ct_pd
 --char_ctrl_files data/controllers/humanoid3d_ctrl.txt
---motion_file data/motions/test
+--motion_file data/motions/lol
 --sync_char_root_pos true
 --sync_char_root_rot false
 
---agent_files data/agents/ct_agent_humanoid_ppo.txt
+--agent_files data/agents/ct_agent_ours_ppo.txt
 
 --augment true
 --augment_k 5

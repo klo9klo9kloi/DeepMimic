@@ -28,7 +28,9 @@ public:
 	virtual int GetStateSize(int agent_id) const;
 	virtual void BuildStateOffsetScale(int agent_id, Eigen::VectorXd& out_offset, Eigen::VectorXd& out_scale) const;
 	virtual void BuildStateNormGroups(int agent_id, Eigen::VectorXi& out_groups) const;
+	//added
 	virtual void SetTimeSeeds(int agent_id, const Eigen::VectorXd& time_seeds);
+	virtual void GetAllStates(int agent_id, Eigen::VectorXd& out_all_states) const;
 
 protected:
 
@@ -40,16 +42,18 @@ protected:
 	bool mSyncCharRootPos;
 	bool mSyncCharRootRot;
 	bool mEnableRootRotFail;
-	bool mEnableRandTiming; //added
-	bool mAugment; //added
+	//added 
+	bool mEnableRandTiming;
+	bool mAugment; 
 	double mHoldEndFrame;
-	double mBaseMotionDuration; // added
-	int mK; //added
+	double mBaseMotionDuration;
+	int mK;
 	int mPosDim;
-	int mMaxEp; //added
-	int mEpDone; //added
-	Eigen::VectorXd mStates; //added
-	Eigen::VectorXd mTimeSeeds; //added
+	int mMaxEp;
+	int mEpDone;
+	Eigen::VectorXd mStates;
+	Eigen::VectorXd mTimeSeeds; 
+	// end added
 
 	virtual bool BuildCharacters();
 
@@ -84,14 +88,4 @@ protected:
     virtual void CalcStates(); //added
     virtual Eigen::VectorXd CalcAugmentedStates() const; //added
 
-    /*
-    virtual Eigen::VectorXd CalcAugmentedStates(double timestep, int state_size) const;
-    virtual void CalculateState(Eigen::VectorXd& out_state, int state_size) const;
-    virtual void BuildStatePose(Eigen::VectorXd& out_pose) const;
-    virtual void BuildStateVel(Eigen::VectorXd& out_vel) const;
-    virtual int GetStatePoseOffset() const;
-    virtual int GetStateVelOffset() const;
-    virtual int GetStatePoseSize() const;
-    virtual int GetStateVelSize() const;
-    */
 };

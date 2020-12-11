@@ -47,7 +47,6 @@ public:
 	virtual std::vector<double> RecordState(int agent_id) const;
 	virtual std::vector<double> RecordGoal(int agent_id) const;
 	virtual void SetAction(int agent_id, const std::vector<double>& action);
-	virtual void SetTimeSeeds(int agent_id, const std::vector<double>& time_seeds); // added
 	virtual void LogVal(int agent_id, double val);
 
 	virtual int GetActionSpace(int agent_id) const;
@@ -55,7 +54,6 @@ public:
 	virtual int GetGoalSize(int agent_id) const;
 	virtual int GetActionSize(int agent_id) const;
 	virtual int GetNumActions(int agent_id) const; // for discrete actions
-	virtual std::vector<double> GetAllStates(int agent_id) const;
 
 	virtual std::vector<double> BuildStateOffset(int agent_id) const;
 	virtual std::vector<double> BuildStateScale(int agent_id) const;
@@ -80,6 +78,10 @@ public:
 	virtual int CheckTerminate(int agent_id) const;
 	virtual void SetMode(int mode);
 	virtual void SetSampleCount(int count);
+
+	//added
+	virtual void SetTimeSeeds(int agent_id, const std::vector<double>& time_seeds); 
+	virtual std::vector<double> GetAllStates(int agent_id) const;
 
 protected:
 	unsigned long int mRandSeed;

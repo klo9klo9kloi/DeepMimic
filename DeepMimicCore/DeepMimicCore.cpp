@@ -229,6 +229,35 @@ void cDeepMimicCore::SetAction(int agent_id, const std::vector<double>& action)
 	}
 }
 
+//added
+
+void cDeepMimicCore::SetTimeSeeds(int agent_id, const std::vector<double>& time_seeds) 
+{
+	const auto& rl_scene = GetRLScene();
+	if (rl_scene != nullptr)
+	{
+		Eigen::VectorXd in_time_seeds;
+		ConvertVector(time_seeds, in_time_seeds);
+		rl_scene->SetTimeSeeds(agent_id, in_time_seeds);
+	}	
+}
+
+std::vector<double> cDeepMimicCore::GetAllStates(int agent_id) const
+{
+	const auto& rl_scene = GetRLScene();
+	if (rl_scene != nullptr)
+	{
+		Eigen::VectorXd all_states;
+		rl_scene->GetAllStates(agent_id, all_states);
+
+		std::vector<double> out_all_states;
+		ConvertVector(all_states, out_all_states);
+		return out_all_states;
+	}	
+}
+
+//end added
+
 void cDeepMimicCore::LogVal(int agent_id, double val)
 {
 	const auto& rl_scene = GetRLScene();
@@ -604,17 +633,6 @@ void cDeepMimicCore::CopyFrame(cTextureDesc& src) const
 const std::shared_ptr<cRLScene>& cDeepMimicCore::GetRLScene() const
 {
 	return mRLScene;
-}
-
-void cDeepMimicCore::SetTimeSeeds(int agent_id, const std::vector<double>& time_seeds) 
-{
-	const auto& rl_scene = GetRLScene();
-	if (rl_scene != nullptr)
-	{
-		Eigen::VectorXd in_time_seeds;
-		ConvertVector(time_seeds, in_time_seeds);
-		rl_scene->SetTimeSeeds(agent_id, in_time_seeds);
-	}	
 }
 
 void cDeepMimicCore::ConvertVector(const Eigen::VectorXd& in_vec, std::vector<double>& out_vec) const

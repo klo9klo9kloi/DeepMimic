@@ -50,6 +50,5 @@
 		"Temp": 0.001
 	},
 
-	"AugmentK": 5,
-	"SamplePool": 30,
+	"SamplePool": 30
 }

@@ -24,7 +24,6 @@ class PPOAgent(PGAgent):
     TD_LAMBDA_KEY = "TDLambda"
     TAR_CLIP_FRAC = "TarClipFrac"
     ACTOR_STEPSIZE_DECAY = "ActorStepsizeDecay"
-    K_KEY = "AugmentK"
     SAMPLE_POOL_KEY = "SamplePool"
 
     def __init__(self, world, id, json_data): 
@@ -41,7 +40,6 @@ class PPOAgent(PGAgent):
         self.td_lambda = 0.95 if (self.TD_LAMBDA_KEY not in json_data) else json_data[self.TD_LAMBDA_KEY]
         self.tar_clip_frac = -1 if (self.TAR_CLIP_FRAC not in json_data) else json_data[self.TAR_CLIP_FRAC]
         self.actor_stepsize_decay = 0.5 if (self.ACTOR_STEPSIZE_DECAY not in json_data) else json_data[self.ACTOR_STEPSIZE_DECAY]
-        self.k = 0 if (self.K_KEY not in json_data) else json_data[self.K_KEY]
         self.sample_pool = 30 if (self.SAMPLE_POOL_KEY not in json_data) else json_data[self.SAMPLE_POOL_KEY]
 
         num_procs = MPIUtil.get_num_procs()
@@ -370,25 +368,30 @@ class PPOAgent(PGAgent):
         self.sess.run(self._actor_stepsize_update_op, feed)
         return
 
-    def sample_time_seeds(self, motion_states, update_timestep, num_samples):
+    def sample_time_seeds(self, motion_states, update_timestep, num_samples, k):
         # motion_states: (N x s_dim)
-        assert(len(motion_states) - k > 0)
+        aug_s_size = self.get_state_size()
+        s_size = aug_s_size//(k+1)
+        assert(len(motion_states) > 0)
+        assert(aug_s_size % (k+1) == 0)
+        assert(len(motion_states) % s_size == 0)
+        motion_states = np.array(motion_states).reshape(-1, s_size)
+        assert(len(motion_states) - 2*k-2 > 0)
 
-        # general structures
-        state_samples = np.random.randint(len(motion_states)-k, size=self.sample_pool)
-        state_samples_pk = state_samples + self.k
+        # calc state values
+        state_samples = np.random.randint(len(motion_states)-2*k-2, size=self.sample_pool)
+        states = np.array([motion_states[idx:idx+k+1].flatten() for idx in state_samples])
+        states_pk = np.array([motion_states[idx+k+1:idx+2*k+2].flatten() for idx in state_samples])
 
-        # make sure to prevent gradient calc
-        val_t = self._eval_critic(motion_states[state_samples], None)
-        val_tpk = self._eval_critic(motion_states[state_samples_pk], None)
+        val_t = self._eval_critic(states, None)
+        val_tpk = self._eval_critic(states_pk, None)
         val_diff = val_t - val_tpk
+        print(val_diff)
 
         # sample pased on val diff
-        diff_e = np.exp(1/(val_diff+1e-8))
+        # diff_e = np.exp(1/(val_diff+1e-8))
+        diff_e = np.exp(val_diff.max() - val_diff)
         p = diff_e/(np.sum(diff_e)+1e-8)
 
         final_state_choices = np.random.choice(state_samples, size=num_samples, p=p)
         return final_state_choices*update_timestep
-
-
-

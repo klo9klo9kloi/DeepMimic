@@ -106,6 +106,12 @@ const std::shared_ptr<cKinCharacter>& cDrawSceneImitate::GetKinChar() const
 	return scene->GetKinChar();
 }
 
+//added 
 void cDrawSceneImitate::SetTimeSeeds(int agent_id, const Eigen::VectorXd& time_seeds)
 {
+}
+
+void cDrawSceneImitate::GetAllStates(int agent_id, Eigen::VectorXd& out_all_states) const 
+{
+	
 }

@@ -260,6 +260,11 @@ void cSceneImitate::SetTimeSeeds(int agent_id, const Eigen::VectorXd& time_seeds
 	mTimeSeeds = time_seeds;
 }
 
+void cSceneImitate::GetAllStates(int agent_id, Eigen::VectorXd& out_all_states) const
+{
+	out_all_states = mStates;
+}
+
 // ----------------------------- added --------------------------
 
 cSceneImitate::cSceneImitate()
@@ -297,6 +302,7 @@ void cSceneImitate::ParseArgs(const std::shared_ptr<cArgParser>& parser)
 	parser->ParseBool("augment", mAugment); //added
 	parser->ParseBool("enable_rand_timing", mEnableRandTiming); //added
 	parser->ParseInt("max_ep", mMaxEp); //added
+	printf("sceneimitate max_ep: %d \n", mMaxEp);
 }
 
 void cSceneImitate::Init()
@@ -425,12 +431,16 @@ void cSceneImitate::BuildKinChar()
 		printf("Failed to build kin character\n");
 		assert(false);
 	}
-    mBaseMotionDuration = mKinChar->GetMotionDuration(); //@klo9klo9kloi
+	// added 
+    mBaseMotionDuration = mKinChar->GetMotionDuration(); 
     mTimeSeeds = Eigen::VectorXd::Ones(mMaxEp);
+    printf("Initial time seeds: [");
     for (int i = 0; i < mMaxEp; i++){
     	double rand_time = CalcRandKinResetTime();
     	mTimeSeeds[i] = rand_time;
+    	printf("%f ", rand_time);
     }
+    printf("]\n\n");
 }
 
 bool cSceneImitate::BuildKinCharacter(int id, std::shared_ptr<cKinCharacter>& out_char) const
@@ -507,9 +517,13 @@ void cSceneImitate::ResetKinChar()
 	if (mEpDone == 0) {
 		rand_time = CalcRandKinResetTime(); 
 
-	} else {
+	} else if (mEpDone-1 < mTimeSeeds.size()) {
 		rand_time = mTimeSeeds[mEpDone-1];
+	} else {
+		printf("kincharacter ep and world ep out of sync");
+		assert(false);
 	}
+	printf("Setting character at time %f \n\n", rand_time);
 
 	kin_char->SetTime(rand_time);
 	kin_char->Pose(rand_time);
